@@ -1,4 +1,4 @@
-import { supabase, supabaseAdmin } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { ChefHat, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import CollectionClient from './CollectionClient';
@@ -42,27 +42,8 @@ export default async function SharedCollectionPage({
     );
   }
 
-  // Get user profile information using admin client
-  let displayName = 'User';
-  try {
-    const { data: userProfile } = await supabaseAdmin.auth.admin.getUserById(
-      userId
-    );
-
-    if (userProfile?.user) {
-      displayName =
-        userProfile.user.user_metadata?.full_name ||
-        userProfile.user.email?.split('@')[0] ||
-        'User';
-    }
-  } catch (error) {
-    console.error('Error fetching user profile:', error);
-    // Fallback to extracting from email if available
-    const userEmail = recipes[0]?.user_id || '';
-    if (userEmail.includes('@')) {
-      displayName = userEmail.split('@')[0];
-    }
-  }
+  // Get display name from the first recipe (all recipes from same user will have same display_name)
+  const displayName = recipes[0]?.display_name || 'User';
 
   return <CollectionClient recipes={recipes} displayName={displayName} />;
 }

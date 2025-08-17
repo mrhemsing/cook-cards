@@ -68,7 +68,9 @@ export default function RecipeForm({
         title: title.trim(),
         ingredients: ingredients.trim(),
         instructions: instructions.trim(),
-        image_url: imageUrl
+        image_url: imageUrl,
+        display_name:
+          user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
       });
 
       if (dbError) throw dbError;

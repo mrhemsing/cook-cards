@@ -241,7 +241,9 @@ export default function CameraScanner({
         title: title.trim(),
         ingredients: ingredients.trim(),
         instructions: instructions.trim(),
-        image_url: publicUrl
+        image_url: publicUrl,
+        display_name:
+          user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
       };
 
       console.log('Saving recipe to database:', recipeData); // Debug log
