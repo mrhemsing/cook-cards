@@ -26,12 +26,6 @@ export default function RecipeBook() {
   const [searchTerm, setSearchTerm] = useState('');
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (user?.id) {
-      fetchRecipes();
-    }
-  }, [user?.id, fetchRecipes]);
-
   const fetchRecipes = useCallback(async () => {
     try {
       const { data, error } = await supabase
@@ -48,6 +42,12 @@ export default function RecipeBook() {
       setLoading(false);
     }
   }, [user?.id]);
+
+  useEffect(() => {
+    if (user?.id) {
+      fetchRecipes();
+    }
+  }, [user?.id, fetchRecipes]);
 
   const handleRecipeAdded = () => {
     setShowForm(false);
