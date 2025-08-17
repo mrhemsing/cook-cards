@@ -11,6 +11,7 @@ import {
   Plus
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Recipe {
   id: string;
@@ -72,7 +73,7 @@ export default function SharedCollectionPage({
       try {
         await navigator.clipboard.writeText(window.location.href);
         alert('Collection link copied to clipboard!');
-      } catch (clipboardError) {
+      } catch {
         alert('Failed to share collection. Please try again.');
       }
     }
@@ -174,10 +175,12 @@ export default function SharedCollectionPage({
               {/* Recipe Image */}
               <div className="h-48 bg-gray-100 relative">
                 {recipe.image_url ? (
-                  <img
+                  <Image
                     src={recipe.image_url}
                     alt={recipe.title}
-                    className="w-full h-full object-cover"
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                   />
                 ) : (
                   <div className="flex items-center justify-center h-full text-gray-400">

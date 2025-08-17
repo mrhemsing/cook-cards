@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { ChefHat, ArrowLeft, Share2, UserPlus } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 interface Recipe {
   id: string;
@@ -65,7 +66,7 @@ export default function SharedRecipePage({
       try {
         await navigator.clipboard.writeText(window.location.href);
         alert('Recipe link copied to clipboard!');
-      } catch (clipboardError) {
+      } catch {
         alert('Failed to share recipe. Please try again.');
       }
     }
@@ -144,11 +145,13 @@ export default function SharedRecipePage({
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           {/* Recipe Image */}
           {recipe.image_url && (
-            <div className="h-96 bg-gray-100">
-              <img
+            <div className="h-96 bg-gray-100 relative">
+              <Image
                 src={recipe.image_url}
                 alt={recipe.title}
-                className="w-full h-full object-cover"
+                fill
+                className="object-cover"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />
             </div>
           )}
@@ -192,8 +195,8 @@ export default function SharedRecipePage({
                   Love this recipe?
                 </h3>
                 <p className="text-gray-600 mb-6">
-                  Create your own digital recipe collection and preserve your
-                  family's culinary heritage.
+                                     Create your own digital recipe collection and preserve your
+                   family&apos;s culinary heritage.
                 </p>
                 <Link
                   href="/"

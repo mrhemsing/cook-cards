@@ -82,7 +82,7 @@ export default function RecipeBook() {
           `${window.location.origin}/collection/${user?.id}`
         );
         alert('Your personal recipe collection link copied to clipboard!');
-      } catch (clipboardError) {
+      } catch {
         alert('Failed to share your recipe collection. Please try again.');
       }
     }
