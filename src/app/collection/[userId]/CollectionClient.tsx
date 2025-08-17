@@ -1,6 +1,6 @@
 'use client';
 
-import { Share2, UserPlus, Camera, Plus } from 'lucide-react';
+import { Camera, Plus, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -15,33 +15,10 @@ interface Recipe {
 
 interface CollectionClientProps {
   recipes: Recipe[];
+  displayName: string;
 }
 
-export default function CollectionClient({ recipes }: CollectionClientProps) {
-  const handleShare = async () => {
-    try {
-      const shareUrl = window.location.href;
-
-      if (navigator.share) {
-        await navigator.share({
-          title: `Recipe Collection`,
-          text: `Check out this amazing recipe collection on Taste of Time!`,
-          url: shareUrl
-        });
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        alert('Collection link copied to clipboard!');
-      }
-    } catch (error) {
-      console.error('Error sharing collection:', error);
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        alert('Collection link copied to clipboard!');
-      } catch {
-        alert('Failed to share collection. Please try again.');
-      }
-    }
-  };
+export default function CollectionClient({ recipes, displayName }: CollectionClientProps) {
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -60,21 +37,7 @@ export default function CollectionClient({ recipes }: CollectionClientProps) {
               </Link>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleShare}
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors px-3 py-2 rounded-md hover:bg-blue-50"
-                title="Share collection">
-                <Share2 className="h-4 w-4" />
-                Share
-              </button>
-              <Link
-                href="/"
-                className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition-all">
-                <UserPlus className="h-4 w-4" />
-                Create Your Collection
-              </Link>
-            </div>
+            {/* Removed share button and Create Your Collection button */}
           </div>
         </div>
       </header>
@@ -84,7 +47,7 @@ export default function CollectionClient({ recipes }: CollectionClientProps) {
         {/* Collection Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            Recipe Collection
+            {displayName}'s Recipe Collection
           </h1>
           <p className="text-xl text-gray-600 mb-6">
             A curated collection of {recipes.length} cherished recipes
