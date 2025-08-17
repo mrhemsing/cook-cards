@@ -74,8 +74,8 @@ export default function RecipeBook() {
               <h1 className="text-xl font-bold text-gray-900">Taste of Time</h1>
             </div>
 
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600">
+            <div className="flex flex-col items-end space-y-2">
+              <span className="text-sm text-gray-600 text-right">
                 Welcome, {user?.user_metadata?.full_name || user?.email}
               </span>
               <button
