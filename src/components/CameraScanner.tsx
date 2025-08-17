@@ -326,9 +326,9 @@ export default function CameraScanner({
                 <div>
                   Debug: capturedImage = {capturedImage ? 'Set' : 'Not set'}
                 </div>
-                <div>Debug: title = "{title}"</div>
-                <div>Debug: ingredients = "{ingredients}"</div>
-                <div>Debug: instructions = "{instructions}"</div>
+                <div>Debug: title = &quot;{title}&quot;</div>
+                <div>Debug: ingredients = &quot;{ingredients}&quot;</div>
+                <div>Debug: instructions = &quot;{instructions}&quot;</div>
                 <div>Debug: aiProcessing = {aiProcessing ? 'Yes' : 'No'}</div>
                 <div>Debug: aiCompleted = {aiCompleted ? 'Yes' : 'No'}</div>
               </div>
