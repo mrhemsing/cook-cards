@@ -66,7 +66,7 @@ export default function RecipeBook() {
           title: `${
             user?.user_metadata?.full_name || user?.email
           }'s Recipe Collection`,
-          text: `Check out my personal recipe collection on Mom&apos;s Yums! I have ${recipes.length} recipes saved.`,
+          text: `Check out my personal recipe collection on Mom's Yums! I have ${recipes.length} recipes saved.`,
           url: shareUrl
         });
       } else {
