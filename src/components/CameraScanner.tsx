@@ -73,7 +73,8 @@ export default function CameraScanner({
     } catch (error) {
       console.error('AI extraction error:', error);
       // Show error to user for debugging
-      alert(`AI extraction failed: ${error.message}. Please fill in manually.`);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`AI extraction failed: ${errorMessage}. Please fill in manually.`);
     } finally {
       setAiProcessing(false);
     }
