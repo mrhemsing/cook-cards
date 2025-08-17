@@ -17,9 +17,6 @@ export default async function SharedCollectionPage({
     .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
-  // Get user profile for display name
-  const { data: userProfile } = await supabase.auth.admin.getUserById(userId);
-
   if (error || !recipes || recipes.length === 0) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
@@ -45,11 +42,10 @@ export default async function SharedCollectionPage({
     );
   }
 
-  // Get user display name from auth metadata
-  const displayName =
-    userProfile?.user?.user_metadata?.full_name ||
-    userProfile?.user?.email?.split('@')[0] ||
-    'User';
+  // Extract display name from the first recipe's user_id (which should be the email)
+  // The user_id in recipes table is actually the user's email
+  const userEmail = recipes[0]?.user_id || '';
+  const displayName = userEmail.split('@')[0] || 'User';
 
   return <CollectionClient recipes={recipes} displayName={displayName} />;
 }
