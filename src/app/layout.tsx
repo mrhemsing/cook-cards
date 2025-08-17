@@ -8,7 +8,12 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'Taste of Time - Recipes Preserved for Generations',
   description:
-    'Scan handwritten recipe cards and organize them into your digital recipe book'
+    'Scan handwritten recipe cards and organize them into your digital recipe book',
+  icons: {
+    icon: '/favicon.svg',
+    shortcut: '/favicon.svg',
+    apple: '/favicon.svg'
+  }
 };
 
 export default function RootLayout({
