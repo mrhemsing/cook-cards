@@ -30,9 +30,9 @@ export default async function SharedRecipePage({
           <p className="text-sm text-gray-500 mb-4">
             This recipe may have been deleted or is no longer available.
           </p>
-                      <Link
-              href="/"
-              className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
+          <Link
+            href="/"
+            className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-orange-600 hover:bg-orange-700">
             <ArrowLeft className="h-4 w-4 mr-2" />
             Go to Taste Legacy
           </Link>

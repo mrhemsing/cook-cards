@@ -33,9 +33,9 @@ export default function CollectionClient({
                 <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-lg mr-3">
                   <Camera className="h-6 w-6 text-white" />
                 </div>
-                                            <h1 className="text-xl font-bold text-gray-900">
-                              Taste Legacy
-                            </h1>
+                <h1 className="text-xl font-bold text-gray-900">
+                  Taste Legacy
+                </h1>
               </Link>
             </div>
 
