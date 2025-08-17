@@ -90,16 +90,21 @@ export default function CameraScanner({
 
         const recipeData = await aiResponse.json();
         console.log('AI response:', recipeData); // Debug log
+        console.log('AI response types:', {
+          title: typeof recipeData.title,
+          ingredients: typeof recipeData.ingredients,
+          instructions: typeof recipeData.instructions
+        }); // Debug log
 
         // Validate AI response
         if (!recipeData || typeof recipeData !== 'object') {
           throw new Error('Invalid AI response format');
         }
 
-        // Auto-fill the form fields with safe defaults
-        setTitle(recipeData.title || '');
-        setIngredients(recipeData.ingredients || '');
-        setInstructions(recipeData.instructions || '');
+        // Auto-fill the form fields with safe defaults and type checking
+        setTitle(typeof recipeData.title === 'string' ? recipeData.title : '');
+        setIngredients(typeof recipeData.ingredients === 'string' ? recipeData.ingredients : '');
+        setInstructions(typeof recipeData.instructions === 'string' ? recipeData.instructions : '');
 
         setAiCompleted(true); // Mark AI as completed
 
@@ -175,7 +180,11 @@ export default function CameraScanner({
       return;
     }
 
+    // Ensure all fields are strings and not empty
     if (
+      typeof title !== 'string' ||
+      typeof ingredients !== 'string' ||
+      typeof instructions !== 'string' ||
       !title.trim() ||
       !ingredients.trim() ||
       !instructions.trim() ||
@@ -374,39 +383,39 @@ export default function CameraScanner({
                         <Sparkles className="h-4 w-4 text-orange-500 animate-pulse" />
                       )}
                     </div>
-                    <input
-                      type="text"
-                      value={title}
-                      onChange={e => setTitle(e.target.value)}
-                      placeholder="e.g., Grandma's Chocolate Chip Cookies"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    />
+                                         <input
+                       type="text"
+                       value={title || ''}
+                       onChange={e => setTitle(e.target.value || '')}
+                       placeholder="e.g., Grandma's Chocolate Chip Cookies"
+                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Ingredients
                     </label>
-                    <textarea
-                      value={ingredients}
-                      onChange={e => setIngredients(e.target.value)}
-                      placeholder="List ingredients here..."
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    />
+                                         <textarea
+                       value={ingredients || ''}
+                       onChange={e => setIngredients(e.target.value || '')}
+                       placeholder="List ingredients here..."
+                       rows={3}
+                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                     />
                   </div>
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       Instructions
                     </label>
-                    <textarea
-                      value={instructions}
-                      onChange={e => setInstructions(e.target.value)}
-                      placeholder="Step-by-step instructions..."
-                      rows={3}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                    />
+                                         <textarea
+                       value={instructions || ''}
+                       onChange={e => setInstructions(e.target.value || '')}
+                       placeholder="Step-by-step instructions..."
+                       rows={3}
+                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                     />
                   </div>
                 </div>
               </div>
