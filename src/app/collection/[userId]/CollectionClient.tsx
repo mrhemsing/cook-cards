@@ -18,8 +18,10 @@ interface CollectionClientProps {
   displayName: string;
 }
 
-export default function CollectionClient({ recipes, displayName }: CollectionClientProps) {
-
+export default function CollectionClient({
+  recipes,
+  displayName
+}: CollectionClientProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}

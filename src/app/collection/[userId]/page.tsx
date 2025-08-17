@@ -56,9 +56,10 @@ export default async function SharedCollectionPage({
   }
 
   // Get user display name from auth metadata
-  const displayName = userProfile?.user?.user_metadata?.full_name || 
-                     userProfile?.user?.email?.split('@')[0] || 
-                     'User';
+  const displayName =
+    userProfile?.user?.user_metadata?.full_name ||
+    userProfile?.user?.email?.split('@')[0] ||
+    'User';
 
   return <CollectionClient recipes={recipes} displayName={displayName} />;
 }
