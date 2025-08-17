@@ -7,7 +7,7 @@ import CameraScanner from './CameraScanner';
 import RecipeList from './RecipeList';
 import RecipeForm from './RecipeForm';
 import ErrorBoundary from './ErrorBoundary';
-import { ChefHat, Camera, LogOut, Plus, Search } from 'lucide-react';
+import { ChefHat, Camera, LogOut, Plus, Search, Share2 } from 'lucide-react';
 
 interface Recipe {
   id: string;
@@ -55,6 +55,35 @@ export default function RecipeBook() {
     fetchRecipes();
   };
 
+  const handleShareRecipeBook = async () => {
+    try {
+      // Create a shareable URL for the recipe book
+      const shareUrl = `${window.location.origin}`;
+
+      // Try to use native sharing if available
+      if (navigator.share) {
+        await navigator.share({
+          title: 'Taste of Time - My Recipe Collection',
+          text: 'Check out my recipe collection on Taste of Time!',
+          url: shareUrl
+        });
+      } else {
+        // Fallback to copying to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Recipe book link copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Error sharing recipe book:', error);
+      // Fallback to copying to clipboard
+      try {
+        await navigator.clipboard.writeText(`${window.location.origin}`);
+        alert('Recipe book link copied to clipboard!');
+      } catch (clipboardError) {
+        alert('Failed to share recipe book. Please try again.');
+      }
+    }
+  };
+
   const filteredRecipes = recipes.filter(
     recipe =>
       recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -78,12 +107,21 @@ export default function RecipeBook() {
               <span className="text-sm text-gray-600 text-right">
                 Welcome, {user?.user_metadata?.full_name || user?.email}
               </span>
-              <button
-                onClick={signOut}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleShareRecipeBook}
+                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
+                  title="Share recipe book">
+                  <Share2 className="h-4 w-4" />
+                  Share
+                </button>
+                <button
+                  onClick={signOut}
+                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </button>
+              </div>
             </div>
           </div>
         </div>

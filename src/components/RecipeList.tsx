@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Edit, Trash2, Eye, X } from 'lucide-react';
+import { Edit, Trash2, Eye, X, Share2 } from 'lucide-react';
 
 interface Recipe {
   id: string;
@@ -80,6 +80,37 @@ export default function RecipeList({
     } catch (error) {
       console.error('Error deleting recipe:', error);
       alert('Error deleting recipe. Please try again.');
+    }
+  };
+
+  const handleShareRecipe = async (recipe: Recipe) => {
+    try {
+      // Create a shareable URL for the recipe
+      const shareUrl = `${window.location.origin}/recipe/${recipe.id}`;
+
+      // Try to use native sharing if available
+      if (navigator.share) {
+        await navigator.share({
+          title: recipe.title,
+          text: `Check out this recipe: ${recipe.title}`,
+          url: shareUrl
+        });
+      } else {
+        // Fallback to copying to clipboard
+        await navigator.clipboard.writeText(shareUrl);
+        alert('Recipe link copied to clipboard!');
+      }
+    } catch (error) {
+      console.error('Error sharing recipe:', error);
+      // Fallback to copying to clipboard
+      try {
+        await navigator.clipboard.writeText(
+          `${window.location.origin}/recipe/${recipe.id}`
+        );
+        alert('Recipe link copied to clipboard!');
+      } catch (clipboardError) {
+        alert('Failed to share recipe. Please try again.');
+      }
     }
   };
 
@@ -170,6 +201,12 @@ export default function RecipeList({
                   View
                 </button>
                 <button
+                  onClick={() => handleShareRecipe(recipe)}
+                  className="px-3 py-2 text-blue-600 hover:text-blue-700 transition-colors"
+                  title="Share recipe">
+                  <Share2 className="h-4 w-4" />
+                </button>
+                <button
                   onClick={() => handleEdit(recipe)}
                   className="px-3 py-2 text-gray-600 hover:text-gray-900 transition-colors">
                   <Edit className="h-4 w-4" />
@@ -194,11 +231,20 @@ export default function RecipeList({
                 <h2 className="text-2xl font-bold text-gray-900">
                   {selectedRecipe.title}
                 </h2>
-                <button
-                  onClick={() => setSelectedRecipe(null)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors">
-                  <X className="h-6 w-6" />
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={() => handleShareRecipe(selectedRecipe)}
+                    className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors px-3 py-2 rounded-md hover:bg-blue-50"
+                    title="Share recipe">
+                    <Share2 className="h-4 w-4" />
+                    Share
+                  </button>
+                  <button
+                    onClick={() => setSelectedRecipe(null)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors">
+                    <X className="h-6 w-6" />
+                  </button>
+                </div>
               </div>
 
               {selectedRecipe.image_url && (
