@@ -61,21 +61,7 @@ export default function RecipeClient({ recipe }: RecipeClientProps) {
               </Link>
             </div>
 
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleShare}
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors px-3 py-2 rounded-md hover:bg-blue-50"
-                title="Share recipe">
-                <Share2 className="h-4 w-4" />
-                Share
-              </button>
-              <Link
-                href="/"
-                className="flex items-center gap-2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition-all">
-                <UserPlus className="h-4 w-4" />
-                Create Your Collection
-              </Link>
-            </div>
+            {/* Removed share button and Create Your Collection button */}
           </div>
         </div>
       </header>
