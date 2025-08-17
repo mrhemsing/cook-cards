@@ -287,30 +287,35 @@ export default function CameraScanner({
                 </div>
               </div>
 
-              {/* Save Recipe Button - Always Visible */}
-              <div className="pt-4">
-                <button
-                  onClick={saveRecipe}
-                  disabled={
-                    loading ||
-                    !title.trim() ||
-                    !ingredients.trim() ||
-                    !instructions.trim()
-                  }
-                  className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 px-6 rounded-lg font-medium hover:from-green-600 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-lg">
-                  {loading ? (
-                    <div className="flex items-center justify-center gap-2">
-                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                      Saving Recipe...
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-center gap-2">
-                      <Save className="h-6 w-6" />
-                      Save Recipe to Your Collection
-                    </div>
-                  )}
-                </button>
-              </div>
+                             {/* Save Recipe Button - Always Visible and Mobile-Friendly */}
+               <div className="pt-4 sticky bottom-0 bg-white pb-2">
+                 <button
+                   onClick={saveRecipe}
+                   disabled={
+                     loading ||
+                     !title.trim() ||
+                     !ingredients.trim() ||
+                     !instructions.trim()
+                   }
+                   className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 px-6 rounded-lg font-medium hover:from-green-600 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-lg shadow-lg border-2 border-green-600">
+                   {loading ? (
+                     <div className="flex items-center justify-center gap-2">
+                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                       Saving Recipe...
+                     </div>
+                   ) : (
+                     <div className="flex items-center justify-center gap-2">
+                       <Save className="h-6 w-6" />
+                       💾 SAVE RECIPE
+                     </div>
+                   )}
+                 </button>
+                 
+                 {/* Mobile-friendly save button indicator */}
+                 <div className="text-center text-xs text-gray-500 mt-2">
+                   👆 Tap above to save your recipe
+                 </div>
+               </div>
 
               {/* Action Buttons */}
               <div className="flex gap-3 pt-2">
@@ -321,17 +326,42 @@ export default function CameraScanner({
                 </button>
               </div>
 
-              {/* Debug info */}
-              <div className="mt-4 p-3 bg-gray-100 rounded-lg text-xs text-gray-600">
-                <div>
-                  Debug: capturedImage = {capturedImage ? 'Set' : 'Not set'}
-                </div>
-                <div>Debug: title = &quot;{title}&quot;</div>
-                <div>Debug: ingredients = &quot;{ingredients}&quot;</div>
-                <div>Debug: instructions = &quot;{instructions}&quot;</div>
-                <div>Debug: aiProcessing = {aiProcessing ? 'Yes' : 'No'}</div>
-                <div>Debug: aiCompleted = {aiCompleted ? 'Yes' : 'No'}</div>
-              </div>
+                             {/* Debug info */}
+               <div className="mt-4 p-3 bg-gray-100 rounded-lg text-xs text-gray-600">
+                 <div>
+                   Debug: capturedImage = {capturedImage ? 'Set' : 'Not set'}
+                 </div>
+                 <div>Debug: title = &quot;{title}&quot;</div>
+                 <div>Debug: ingredients = &quot;{ingredients}&quot;</div>
+                 <div>Debug: instructions = &quot;{instructions}&quot;</div>
+                 <div>Debug: aiProcessing = {aiProcessing ? 'Yes' : 'No'}</div>
+                 <div>Debug: aiCompleted = {aiCompleted ? 'Yes' : 'No'}</div>
+               </div>
+               
+               {/* Floating Save Button for Mobile */}
+               <div className="fixed bottom-4 left-4 right-4 z-60 md:hidden">
+                 <button
+                   onClick={saveRecipe}
+                   disabled={
+                     loading ||
+                     !title.trim() ||
+                     !ingredients.trim() ||
+                     !instructions.trim()
+                   }
+                   className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 px-6 rounded-lg font-medium shadow-xl border-2 border-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-lg">
+                   {loading ? (
+                     <div className="flex items-center justify-center gap-2">
+                       <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                       Saving...
+                     </div>
+                   ) : (
+                     <div className="flex items-center justify-center gap-2">
+                       <Save className="h-6 w-6" />
+                       💾 SAVE RECIPE
+                     </div>
+                   )}
+                 </button>
+               </div>
             </div>
           )}
         </div>
