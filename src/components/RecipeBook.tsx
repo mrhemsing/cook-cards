@@ -55,31 +55,31 @@ export default function RecipeBook() {
     fetchRecipes();
   };
 
-  const handleShareRecipeBook = async () => {
+    const handleShareRecipeBook = async () => {
     try {
-      // Create a shareable URL for the recipe book
-      const shareUrl = `${window.location.origin}`;
-
+      // Create a shareable URL for the user's personal recipe collection
+      const shareUrl = `${window.location.origin}/collection/${user?.id}`;
+      
       // Try to use native sharing if available
       if (navigator.share) {
         await navigator.share({
-          title: 'Taste of Time - My Recipe Collection',
-          text: 'Check out my recipe collection on Taste of Time!',
+          title: `${user?.user_metadata?.full_name || user?.email}'s Recipe Collection`,
+          text: `Check out my personal recipe collection on Taste of Time! I have ${recipes.length} recipes saved.`,
           url: shareUrl
         });
       } else {
         // Fallback to copying to clipboard
         await navigator.clipboard.writeText(shareUrl);
-        alert('Recipe book link copied to clipboard!');
+        alert('Your personal recipe collection link copied to clipboard!');
       }
     } catch (error) {
       console.error('Error sharing recipe book:', error);
       // Fallback to copying to clipboard
       try {
-        await navigator.clipboard.writeText(`${window.location.origin}`);
-        alert('Recipe book link copied to clipboard!');
+        await navigator.clipboard.writeText(`${window.location.origin}/collection/${user?.id}`);
+        alert('Your personal recipe collection link copied to clipboard!');
       } catch (clipboardError) {
-        alert('Failed to share recipe book. Please try again.');
+        alert('Failed to share your recipe collection. Please try again.');
       }
     }
   };
@@ -111,9 +111,9 @@ export default function RecipeBook() {
                 <button
                   onClick={handleShareRecipeBook}
                   className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
-                  title="Share recipe book">
+                  title="Share my recipe collection">
                   <Share2 className="h-4 w-4" />
-                  Share
+                  Share My Collection
                 </button>
                 <button
                   onClick={signOut}
