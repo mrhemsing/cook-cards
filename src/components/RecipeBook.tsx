@@ -55,15 +55,17 @@ export default function RecipeBook() {
     fetchRecipes();
   };
 
-    const handleShareRecipeBook = async () => {
+  const handleShareRecipeBook = async () => {
     try {
       // Create a shareable URL for the user's personal recipe collection
       const shareUrl = `${window.location.origin}/collection/${user?.id}`;
-      
+
       // Try to use native sharing if available
       if (navigator.share) {
         await navigator.share({
-          title: `${user?.user_metadata?.full_name || user?.email}'s Recipe Collection`,
+          title: `${
+            user?.user_metadata?.full_name || user?.email
+          }'s Recipe Collection`,
           text: `Check out my personal recipe collection on Taste of Time! I have ${recipes.length} recipes saved.`,
           url: shareUrl
         });
@@ -76,7 +78,9 @@ export default function RecipeBook() {
       console.error('Error sharing recipe book:', error);
       // Fallback to copying to clipboard
       try {
-        await navigator.clipboard.writeText(`${window.location.origin}/collection/${user?.id}`);
+        await navigator.clipboard.writeText(
+          `${window.location.origin}/collection/${user?.id}`
+        );
         alert('Your personal recipe collection link copied to clipboard!');
       } catch (clipboardError) {
         alert('Failed to share your recipe collection. Please try again.');
