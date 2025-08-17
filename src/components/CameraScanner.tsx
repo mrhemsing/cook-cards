@@ -110,7 +110,7 @@ export default function CameraScanner({
         }); // Debug log
       } catch (fetchError) {
         clearTimeout(timeoutId);
-        if (fetchError.name === 'AbortError') {
+        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
           throw new Error('AI extraction timed out. Please try again.');
         }
         throw fetchError;

@@ -30,7 +30,7 @@ export default function RecipeBook() {
     if (user?.id) {
       fetchRecipes();
     }
-  }, [user?.id]);
+  }, [user?.id, fetchRecipes]);
 
   const fetchRecipes = useCallback(async () => {
     try {
