@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import CameraScanner from './CameraScanner';
@@ -26,10 +26,12 @@ export default function RecipeBook() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchRecipes();
+    if (user?.id) {
+      fetchRecipes();
+    }
   }, [user?.id]);
 
-  const fetchRecipes = async () => {
+  const fetchRecipes = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('recipes')
@@ -44,7 +46,7 @@ export default function RecipeBook() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user?.id]);
 
   const handleRecipeAdded = () => {
     setShowForm(false);

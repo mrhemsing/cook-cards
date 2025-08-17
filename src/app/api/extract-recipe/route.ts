@@ -14,14 +14,8 @@ export async function POST(request: NextRequest) {
     const buffer = Buffer.from(bytes);
     const base64Image = buffer.toString('base64');
 
-    // Option 1: Use Google Cloud Vision API (recommended for production)
-    // const recipeData = await extractWithGoogleVision(base64Image);
-
-    // Option 2: Use OpenAI GPT-4 Vision (alternative)
+        // Use OpenAI GPT-4 Vision for recipe extraction
     const recipeData = await extractWithOpenAI(base64Image);
-
-    // Option 3: Use a free OCR service (for development/testing)
-    // const recipeData = await extractWithFreeOCR(base64Image);
 
     return NextResponse.json(recipeData);
   } catch (error) {
@@ -97,79 +91,9 @@ async function extractWithOpenAI(base64Image: string) {
   }
 }
 
-// Google Cloud Vision API approach (more accurate for OCR)
-async function extractWithGoogleVision(base64Image: string) {
-  try {
-    const response = await fetch(
-      `https://vision.googleapis.com/v1/images:annotate?key=${process.env.GOOGLE_CLOUD_API_KEY}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          requests: [
-            {
-              image: {
-                content: base64Image
-              },
-              features: [
-                {
-                  type: 'TEXT_DETECTION',
-                  maxResults: 1
-                }
-              ]
-            }
-          ]
-        })
-      }
-    );
 
-    if (!response.ok) {
-      throw new Error('Google Vision API request failed');
-    }
 
-    const data = await response.json();
-    const text = data.responses[0]?.textAnnotations[0]?.description || '';
 
-    return extractFromText(text);
-  } catch (error) {
-    console.error('Google Vision extraction error:', error);
-    throw error;
-  }
-}
-
-// Free OCR service approach (for development)
-async function extractWithFreeOCR(base64Image: string) {
-  try {
-    const response = await fetch('https://api.ocr.space/parse/image', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/x-www-form-urlencoded'
-      },
-      body: new URLSearchParams({
-        apikey: process.env.OCR_SPACE_API_KEY || 'helloworld', // free tier key
-        base64Image: base64Image,
-        language: 'eng',
-        isOverlayRequired: false,
-        filetype: 'jpg',
-        detectOrientation: true
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error('OCR.space API request failed');
-    }
-
-    const data = await response.json();
-    const text = data.ParsedResults?.[0]?.ParsedText || '';
-
-    return extractFromText(text);
-  } catch (error) {
-    console.error('OCR.space extraction error:', error);
-    throw error;
-  }
-}
 
 // Extract recipe information from OCR text
 function extractFromText(text: string) {
