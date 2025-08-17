@@ -155,16 +155,29 @@ export default function CameraScanner({
       }
 
       console.log('Image captured successfully, size:', imageSrc.length);
-      const newImages = [...capturedImages, imageSrc];
-      setCapturedImages(newImages);
+      
+      // Crop the image to the recipe card boundaries
+      cropImageToRecipeCard(imageSrc).then((croppedImage) => {
+        if (!croppedImage) {
+          console.error('Failed to crop image');
+          alert('Failed to process image. Please try again.');
+          return;
+        }
 
-      // Automatically extract recipe with AI using all images
-      console.log(
-        'Image captured, calling AI with',
-        newImages.length,
-        'images...'
-      ); // Debug log
-      extractRecipeWithAI(newImages);
+        const newImages = [...capturedImages, croppedImage];
+        setCapturedImages(newImages);
+
+        // Automatically extract recipe with AI using all images
+        console.log(
+          'Image captured and cropped, calling AI with',
+          newImages.length,
+          'images...'
+        ); // Debug log
+        extractRecipeWithAI(newImages);
+      }).catch((error) => {
+        console.error('Error cropping image:', error);
+        alert('Failed to process image. Please try again.');
+      });
     } catch (error) {
       console.error('Error in capture function:', error);
       alert('Error capturing image. Please try again.');
@@ -195,6 +208,64 @@ export default function CameraScanner({
     if (newImages.length === 0) {
       setShowAddPhoto(false);
     }
+  };
+
+  // Function to crop image to recipe card boundaries
+  const cropImageToRecipeCard = (imageSrc: string): Promise<string | null> => {
+    return new Promise((resolve) => {
+      try {
+        // Create a canvas element for cropping
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          console.error('Failed to get canvas context');
+          resolve(null);
+          return;
+        }
+
+        // Create an image element to load the captured image
+        const img = new window.Image();
+        img.onload = () => {
+          try {
+            // Set canvas dimensions to match the recipe card boundaries
+            // The boundaries are centered and take up most of the camera view
+            const cropWidth = img.width * 0.8; // 80% of image width
+            const cropHeight = img.height * 0.8; // 80% of image height
+            const cropX = (img.width - cropWidth) / 2; // Center horizontally
+            const cropY = (img.height - cropHeight) / 2; // Center vertically
+
+            // Set canvas size to the cropped dimensions
+            canvas.width = cropWidth;
+            canvas.height = cropHeight;
+
+            // Draw the cropped portion of the image
+            ctx.drawImage(
+              img,
+              cropX, cropY, cropWidth, cropHeight, // Source rectangle
+              0, 0, cropWidth, cropHeight // Destination rectangle
+            );
+
+            // Return the cropped image as base64
+            const croppedImage = canvas.toDataURL('image/jpeg', 0.9);
+            resolve(croppedImage);
+          } catch (error) {
+            console.error('Error processing cropped image:', error);
+            resolve(null);
+          }
+        };
+
+        img.onerror = () => {
+          console.error('Failed to load image for cropping');
+          resolve(null);
+        };
+
+        // Set the source to start loading
+        img.src = imageSrc;
+      } catch (error) {
+        console.error('Error setting up image cropping:', error);
+        resolve(null);
+      }
+    });
   };
 
   const saveRecipe = async () => {
@@ -357,9 +428,10 @@ export default function CameraScanner({
                       }}
                     />
                     <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="border-2 border-white border-dashed rounded-lg p-8 text-center text-white">
+                      <div className="border-2 border-white border-dashed rounded-lg p-8 text-center text-white" style={{ width: '80%', height: '80%' }}>
                         <Camera className="h-12 w-12 mx-auto mb-2" />
-                        <p>Position your recipe card in the frame</p>
+                        <p>Position your recipe card within this frame</p>
+                        <p className="text-xs opacity-75 mt-1">Only this area will be saved</p>
                       </div>
                     </div>
                   </>
@@ -458,9 +530,10 @@ export default function CameraScanner({
                           }}
                         />
                         <div className="absolute inset-0 flex items-center justify-center">
-                          <div className="border-2 border-white border-dashed rounded-lg p-4 text-center text-white">
+                          <div className="border-2 border-white border-dashed rounded-lg p-4 text-center text-white" style={{ width: '80%', height: '80%' }}>
                             <Camera className="h-6 w-6 mx-auto mb-1" />
                             <p className="text-sm">Add another photo</p>
+                            <p className="text-xs opacity-75">Only this area will be saved</p>
                           </div>
                         </div>
                       </div>
@@ -571,6 +644,7 @@ export default function CameraScanner({
                 <div>Debug: aiProcessing = {aiProcessing ? 'Yes' : 'No'}</div>
                 <div>Debug: aiCompleted = {aiCompleted ? 'Yes' : 'No'}</div>
                 <div>Debug: showAddPhoto = {showAddPhoto ? 'Yes' : 'No'}</div>
+                <div>Debug: Image cropping enabled - Only 80% center area saved</div>
               </div>
 
               {/* Floating Save Button for Mobile */}
