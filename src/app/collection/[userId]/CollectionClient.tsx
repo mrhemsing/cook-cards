@@ -54,7 +54,7 @@ export default function CollectionClient({
             Recipe Collection
           </h1>
           <p className="text-xl text-gray-600 mb-6">
-            A curated collection cherished family recipes
+            A curated collection of cherished family recipes
           </p>
           <div className="flex justify-center gap-4">
             <div className="flex items-center gap-2 text-gray-600">
