@@ -35,7 +35,9 @@ export default function LoginPage() {
               <ChefHat className="h-8 w-8 text-white" />
             </div>
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Taste of Time</h1>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Taste Legacy
+          </h1>
           <p className="text-gray-600">Recipes Preserved for Generations</p>
         </div>
 

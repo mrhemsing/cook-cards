@@ -6,7 +6,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Taste of Time - Recipes Preserved for Generations',
+  title: 'Taste Legacy - Recipes Preserved for Generations',
   description:
     'Scan handwritten recipe cards and organize them into your digital recipe book',
   icons: {

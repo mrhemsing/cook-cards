@@ -33,9 +33,9 @@ export default function CollectionClient({
                 <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-lg mr-3">
                   <Camera className="h-6 w-6 text-white" />
                 </div>
-                <h1 className="text-xl font-bold text-gray-900">
-                  Taste of Time
-                </h1>
+                                            <h1 className="text-xl font-bold text-gray-900">
+                              Taste Legacy
+                            </h1>
               </Link>
             </div>
 
@@ -123,9 +123,9 @@ export default function CollectionClient({
             Inspired by this collection?
           </h3>
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Start preserving your own family recipes with Taste of Time. Scan
+            Start preserving your own family recipes with Taste Legacy. Scan
             handwritten recipe cards, organize your collection, and share your
-            culinary heritage with loved ones.
+            culinary legacy with loved ones.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

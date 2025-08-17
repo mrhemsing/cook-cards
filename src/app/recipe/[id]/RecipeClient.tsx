@@ -31,7 +31,7 @@ export default function RecipeClient({ recipe }: RecipeClientProps) {
                   <UserPlus className="h-6 w-6 text-white" />
                 </div>
                 <h1 className="text-xl font-bold text-gray-900">
-                  Taste of Time
+                  Taste Legacy
                 </h1>
               </Link>
             </div>
@@ -97,7 +97,7 @@ export default function RecipeClient({ recipe }: RecipeClientProps) {
                 </h3>
                 <p className="text-gray-600 mb-6">
                   Create your own digital recipe collection and preserve your
-                  family&apos;s culinary heritage.
+                  family&apos;s culinary legacy.
                 </p>
                 <Link
                   href="/"
