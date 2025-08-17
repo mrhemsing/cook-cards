@@ -107,6 +107,11 @@ export default function CameraScanner({
   };
 
   const saveRecipe = async () => {
+    if (!user?.id) {
+      alert('You must be logged in to save recipes');
+      return;
+    }
+
     if (
       !title.trim() ||
       !ingredients.trim() ||
@@ -119,38 +124,64 @@ export default function CameraScanner({
 
     setLoading(true);
     try {
+      console.log('Starting recipe save process...'); // Debug log
+      console.log('User ID:', user?.id); // Debug log
+
       // Convert base64 to blob
       const response = await fetch(capturedImage);
       const blob = await response.blob();
+      console.log('Blob created, size:', blob.size); // Debug log
 
       // Upload image to Supabase Storage
-      const fileName = `recipe-${Date.now()}.jpg`;
-      const { error: uploadError } = await supabase.storage
+      const fileName = `${user!.id}/recipe-${Date.now()}.jpg`;
+      console.log('Uploading to storage:', fileName); // Debug log
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('recipe-images')
         .upload(fileName, blob);
 
-      if (uploadError) throw uploadError;
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError); // Debug log
+        throw new Error(`Storage upload failed: ${uploadError.message}`);
+      }
+
+      console.log('Storage upload successful:', uploadData); // Debug log
 
       // Get public URL
       const {
         data: { publicUrl }
       } = supabase.storage.from('recipe-images').getPublicUrl(fileName);
 
+      console.log('Public URL:', publicUrl); // Debug log
+
       // Save recipe to database
-      const { error: dbError } = await supabase.from('recipes').insert({
+      const recipeData = {
         user_id: user!.id,
         title: title.trim(),
         ingredients: ingredients.trim(),
         instructions: instructions.trim(),
         image_url: publicUrl
-      });
+      };
 
-      if (dbError) throw dbError;
+      console.log('Saving recipe to database:', recipeData); // Debug log
+
+      const { data: dbData, error: dbError } = await supabase
+        .from('recipes')
+        .insert(recipeData);
+
+      if (dbError) {
+        console.error('Database insert error:', dbError); // Debug log
+        throw new Error(`Database insert failed: ${dbError.message}`);
+      }
+
+      console.log('Database insert successful:', dbData); // Debug log
 
       onRecipeAdded();
     } catch (error) {
       console.error('Error saving recipe:', error);
-      alert('Error saving recipe. Please try again.');
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error occurred';
+      alert(`Error saving recipe: ${errorMessage}`);
     } finally {
       setLoading(false);
     }
