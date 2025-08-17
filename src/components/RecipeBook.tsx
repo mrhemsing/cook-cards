@@ -111,21 +111,12 @@ export default function RecipeBook() {
               <span className="text-sm text-gray-600 text-right">
                 Welcome, {user?.user_metadata?.full_name || user?.email}
               </span>
-              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
-                <button
-                  onClick={handleShareRecipeBook}
-                  className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
-                  title="Share my recipe collection">
-                  <Share2 className="h-4 w-4" />
-                  Share My Collection
-                </button>
-                <button
-                  onClick={signOut}
-                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
-                  <LogOut className="h-4 w-4" />
-                  Sign Out
-                </button>
-              </div>
+              <button
+                onClick={signOut}
+                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+                <LogOut className="h-4 w-4" />
+                Sign Out
+              </button>
             </div>
           </div>
         </div>
@@ -147,6 +138,17 @@ export default function RecipeBook() {
             className="flex items-center justify-center gap-2 bg-white border border-gray-300 text-gray-700 px-6 py-3 rounded-lg font-medium hover:bg-gray-50 transition-colors shadow-sm">
             <Plus className="h-5 w-5" />
             Add Recipe Manually
+          </button>
+        </div>
+
+        {/* Share Collection Button */}
+        <div className="mb-6">
+          <button
+            onClick={handleShareRecipeBook}
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors px-4 py-2 rounded-lg hover:bg-blue-50"
+            title="Share my recipe collection">
+            <Share2 className="h-4 w-4" />
+            Share My Collection
           </button>
         </div>
 
