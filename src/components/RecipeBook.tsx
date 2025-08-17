@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import CameraScanner from './CameraScanner';
 import RecipeList from './RecipeList';
 import RecipeForm from './RecipeForm';
+import ErrorBoundary from './ErrorBoundary';
 import { ChefHat, Camera, LogOut, Plus, Search } from 'lucide-react';
 
 interface Recipe {
@@ -130,10 +131,12 @@ export default function RecipeBook() {
 
         {/* Scanner Modal */}
         {showScanner && (
-          <CameraScanner
-            onClose={() => setShowScanner(false)}
-            onRecipeAdded={handleRecipeAdded}
-          />
+          <ErrorBoundary>
+            <CameraScanner
+              onClose={() => setShowScanner(false)}
+              onRecipeAdded={handleRecipeAdded}
+            />
+          </ErrorBoundary>
         )}
 
         {/* Form Modal */}

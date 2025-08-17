@@ -27,15 +27,41 @@ export default function CameraScanner({
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>(
     'environment'
   );
+  const [cameraError, setCameraError] = useState<string | null>(null);
 
   const extractRecipeWithAI = async (imageData: string) => {
+    if (!imageData) {
+      console.error('No image data provided to AI extraction');
+      return;
+    }
+
     setAiProcessing(true);
     try {
       console.log('Starting AI extraction...'); // Debug log
 
-      // Convert base64 to blob
-      const response = await fetch(imageData);
-      const blob = await response.blob();
+      // Validate image data format
+      if (!imageData.startsWith('data:image/')) {
+        throw new Error('Invalid image format');
+      }
+
+      // Convert base64 to blob with error handling
+      let blob: Blob;
+      try {
+        const response = await fetch(imageData);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image: ${response.status}`);
+        }
+        blob = await response.blob();
+        console.log('Blob created, size:', blob.size); // Debug log
+      } catch (fetchError) {
+        console.error('Error creating blob:', fetchError);
+        throw new Error('Failed to process image data');
+      }
+
+      // Validate blob
+      if (!blob || blob.size === 0) {
+        throw new Error('Invalid image blob');
+      }
 
       // Create FormData for the API
       const formData = new FormData();
@@ -43,54 +69,90 @@ export default function CameraScanner({
 
       console.log('Calling AI API...'); // Debug log
 
-      // Call AI service to extract recipe
-      const aiResponse = await fetch('/api/extract-recipe', {
-        method: 'POST',
-        body: formData
-      });
+      // Call AI service to extract recipe with timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-      if (!aiResponse.ok) {
-        const errorText = await aiResponse.text();
-        console.error('AI API error:', aiResponse.status, errorText);
-        throw new Error(`AI extraction failed: ${aiResponse.status}`);
+      try {
+        const aiResponse = await fetch('/api/extract-recipe', {
+          method: 'POST',
+          body: formData,
+          signal: controller.signal
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!aiResponse.ok) {
+          const errorText = await aiResponse.text();
+          console.error('AI API error:', aiResponse.status, errorText);
+          throw new Error(`AI extraction failed: ${aiResponse.status}`);
+        }
+
+        const recipeData = await aiResponse.json();
+        console.log('AI response:', recipeData); // Debug log
+
+        // Validate AI response
+        if (!recipeData || typeof recipeData !== 'object') {
+          throw new Error('Invalid AI response format');
+        }
+
+        // Auto-fill the form fields with safe defaults
+        setTitle(recipeData.title || '');
+        setIngredients(recipeData.ingredients || '');
+        setInstructions(recipeData.instructions || '');
+
+        setAiCompleted(true); // Mark AI as completed
+
+        console.log('Fields updated:', {
+          title: recipeData.title,
+          ingredients: recipeData.ingredients,
+          instructions: recipeData.instructions
+        }); // Debug log
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === 'AbortError') {
+          throw new Error('AI extraction timed out. Please try again.');
+        }
+        throw fetchError;
       }
-
-      const recipeData = await aiResponse.json();
-      console.log('AI response:', recipeData); // Debug log
-
-      // Auto-fill the form fields
-      setTitle(recipeData.title || '');
-      setIngredients(recipeData.ingredients || '');
-      setInstructions(recipeData.instructions || '');
-
-      setAiCompleted(true); // Mark AI as completed
-
-      console.log('Fields updated:', {
-        title: recipeData.title,
-        ingredients: recipeData.ingredients,
-        instructions: recipeData.instructions
-      }); // Debug log
     } catch (error) {
       console.error('AI extraction error:', error);
       // Show error to user for debugging
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error occurred';
       alert(`AI extraction failed: ${errorMessage}. Please fill in manually.`);
+
+      // Reset AI states on error
+      setAiCompleted(false);
     } finally {
       setAiProcessing(false);
     }
   };
 
   const capture = useCallback(() => {
-    if (webcamRef.current) {
+    try {
+      if (!webcamRef.current) {
+        console.error('Webcam ref not available');
+        alert('Camera not ready. Please try again.');
+        return;
+      }
+
       const imageSrc = webcamRef.current.getScreenshot();
+      if (!imageSrc) {
+        console.error('Failed to capture image');
+        alert('Failed to capture image. Please try again.');
+        return;
+      }
+
+      console.log('Image captured successfully, size:', imageSrc.length);
       setCapturedImage(imageSrc);
 
       // Automatically extract recipe with AI
-      if (imageSrc) {
-        console.log('Image captured, calling AI...'); // Debug log
-        extractRecipeWithAI(imageSrc);
-      }
+      console.log('Image captured, calling AI...'); // Debug log
+      extractRecipeWithAI(imageSrc);
+    } catch (error) {
+      console.error('Error in capture function:', error);
+      alert('Error capturing image. Please try again.');
     }
   }, []);
 
@@ -100,6 +162,7 @@ export default function CameraScanner({
     setIngredients('');
     setInstructions('');
     setAiCompleted(false);
+    setCameraError(null); // Reset camera error when retaking
   };
 
   const toggleCamera = () => {
@@ -205,28 +268,58 @@ export default function CameraScanner({
             /* Camera View */
             <div className="space-y-4">
               <div className="relative bg-gray-900 rounded-lg overflow-hidden">
-                <Webcam
-                  ref={webcamRef}
-                  screenshotFormat="image/jpeg"
-                  videoConstraints={{
-                    facingMode: facingMode,
-                    width: { ideal: 640 },
-                    height: { ideal: 480 }
-                  }}
-                  className="w-full h-64 object-cover"
-                />
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="border-2 border-white border-dashed rounded-lg p-8 text-center text-white">
-                    <Camera className="h-12 w-12 mx-auto mb-2" />
-                    <p>Position your recipe card in the frame</p>
+                {cameraError ? (
+                  <div className="w-full h-64 flex items-center justify-center text-white">
+                    <div className="text-center">
+                      <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
+                        <Camera className="h-6 w-6 text-red-600" />
+                      </div>
+                      <p className="text-red-200 mb-2">{cameraError}</p>
+                      <button
+                        onClick={() => setCameraError(null)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                        Try Again
+                      </button>
+                    </div>
                   </div>
-                </div>
+                ) : (
+                  <>
+                    <Webcam
+                      ref={webcamRef}
+                      screenshotFormat="image/jpeg"
+                      videoConstraints={{
+                        facingMode: facingMode,
+                        width: { ideal: 640 },
+                        height: { ideal: 480 }
+                      }}
+                      className="w-full h-64 object-cover"
+                      onError={error => {
+                        console.error('Webcam error:', error);
+                        setCameraError(
+                          'Camera error. Please check permissions and try again.'
+                        );
+                      }}
+                      onUserMediaError={error => {
+                        console.error('User media error:', error);
+                        setCameraError(
+                          'Camera access denied. Please allow camera permissions and try again.'
+                        );
+                      }}
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="border-2 border-white border-dashed rounded-lg p-8 text-center text-white">
+                        <Camera className="h-12 w-12 mx-auto mb-2" />
+                        <p>Position your recipe card in the frame</p>
+                      </div>
+                    </div>
+                  </>
+                )}
               </div>
 
               <div className="flex gap-3">
                 <button
                   onClick={capture}
-                  disabled={aiProcessing}
+                  disabled={aiProcessing || !!cameraError}
                   className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-6 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition-all disabled:opacity-50">
                   {aiProcessing ? (
                     <>
