@@ -1,17 +1,7 @@
 import { supabase } from '@/lib/supabase';
-import { ChefHat, ArrowLeft, Camera, Plus } from 'lucide-react';
+import { ChefHat, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 import CollectionClient from './CollectionClient';
-
-interface Recipe {
-  id: string;
-  title: string;
-  ingredients: string;
-  instructions: string;
-  image_url: string;
-  created_at: string;
-}
 
 export default async function SharedCollectionPage({
   params

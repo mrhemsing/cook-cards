@@ -49,7 +49,7 @@ export default function CollectionClient({
         {/* Collection Header */}
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-gray-900 mb-4">
-            {displayName}'s Recipe Collection
+            {displayName}&apos;s Recipe Collection
           </h1>
           <p className="text-xl text-gray-600 mb-6">
             A curated collection of {recipes.length} cherished recipes

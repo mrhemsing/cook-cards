@@ -1,6 +1,6 @@
 'use client';
 
-import { Share2, UserPlus } from 'lucide-react';
+import { UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -19,31 +19,6 @@ interface RecipeClientProps {
 }
 
 export default function RecipeClient({ recipe }: RecipeClientProps) {
-  const handleShare = async () => {
-    try {
-      const shareUrl = window.location.href;
-
-      if (navigator.share) {
-        await navigator.share({
-          title: recipe?.title || 'Recipe',
-          text: `Check out this recipe: ${recipe?.title}`,
-          url: shareUrl
-        });
-      } else {
-        await navigator.clipboard.writeText(shareUrl);
-        alert('Recipe link copied to clipboard!');
-      }
-    } catch (error) {
-      console.error('Error sharing recipe:', error);
-      try {
-        await navigator.clipboard.writeText(window.location.href);
-        alert('Recipe link copied to clipboard!');
-      } catch {
-        alert('Failed to share recipe. Please try again.');
-      }
-    }
-  };
-
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
