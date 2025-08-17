@@ -18,7 +18,7 @@ export default function CameraScanner({
 }: CameraScannerProps) {
   const { user } = useAuth();
   const webcamRef = useRef<Webcam>(null);
-  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [capturedImages, setCapturedImages] = useState<string[]>([]);
   const [title, setTitle] = useState('');
   const [ingredients, setIngredients] = useState('');
   const [instructions, setInstructions] = useState('');
@@ -29,9 +29,10 @@ export default function CameraScanner({
     'environment'
   );
   const [cameraError, setCameraError] = useState<string | null>(null);
+  const [showAddPhoto, setShowAddPhoto] = useState(false);
 
-  const extractRecipeWithAI = async (imageData: string) => {
-    if (!imageData) {
+  const extractRecipeWithAI = async (imageDataArray: string[]) => {
+    if (!imageDataArray || imageDataArray.length === 0) {
       console.error('No image data provided to AI extraction');
       return;
     }
@@ -40,33 +41,28 @@ export default function CameraScanner({
     try {
       console.log('Starting AI extraction...'); // Debug log
 
-      // Validate image data format
-      if (!imageData.startsWith('data:image/')) {
-        throw new Error('Invalid image format');
-      }
-
-      // Convert base64 to blob with error handling
-      let blob: Blob;
-      try {
-        const response = await fetch(imageData);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch image: ${response.status}`);
+      // Validate image data format for all images
+      for (const imageData of imageDataArray) {
+        if (!imageData.startsWith('data:image/')) {
+          throw new Error('Invalid image format');
         }
-        blob = await response.blob();
-        console.log('Blob created, size:', blob.size); // Debug log
-      } catch (fetchError) {
-        console.error('Error creating blob:', fetchError);
-        throw new Error('Failed to process image data');
       }
 
-      // Validate blob
-      if (!blob || blob.size === 0) {
-        throw new Error('Invalid image blob');
-      }
-
-      // Create FormData for the API
+      // Create FormData for the API with multiple images
       const formData = new FormData();
-      formData.append('image', blob, 'recipe-card.jpg');
+      
+      // Add all images to the form data
+      for (let i = 0; i < imageDataArray.length; i++) {
+        const response = await fetch(imageDataArray[i]);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch image ${i + 1}: ${response.status}`);
+        }
+        const blob = await response.blob();
+        if (!blob || blob.size === 0) {
+          throw new Error(`Invalid image blob for image ${i + 1}`);
+        }
+        formData.append('images', blob, `recipe-card-${i + 1}.jpg`);
+      }
 
       console.log('Calling AI API...'); // Debug log
 
@@ -159,11 +155,12 @@ export default function CameraScanner({
       }
 
       console.log('Image captured successfully, size:', imageSrc.length);
-      setCapturedImage(imageSrc);
+      const newImages = [...capturedImages, imageSrc];
+      setCapturedImages(newImages);
 
-      // Automatically extract recipe with AI
-      console.log('Image captured, calling AI...'); // Debug log
-      extractRecipeWithAI(imageSrc);
+      // Automatically extract recipe with AI using all images
+      console.log('Image captured, calling AI with', newImages.length, 'images...'); // Debug log
+      extractRecipeWithAI(newImages);
     } catch (error) {
       console.error('Error in capture function:', error);
       alert('Error capturing image. Please try again.');
@@ -171,16 +168,29 @@ export default function CameraScanner({
   }, []);
 
   const retake = () => {
-    setCapturedImage(null);
+    setCapturedImages([]);
     setTitle('');
     setIngredients('');
     setInstructions('');
     setAiCompleted(false);
     setCameraError(null); // Reset camera error when retaking
+    setShowAddPhoto(false);
   };
 
   const toggleCamera = () => {
     setFacingMode(prev => (prev === 'user' ? 'environment' : 'user'));
+  };
+
+  const addAnotherPhoto = () => {
+    setShowAddPhoto(true);
+  };
+
+  const removeImage = (index: number) => {
+    const newImages = capturedImages.filter((_, i) => i !== index);
+    setCapturedImages(newImages);
+    if (newImages.length === 0) {
+      setShowAddPhoto(false);
+    }
   };
 
   const saveRecipe = async () => {
@@ -197,9 +207,9 @@ export default function CameraScanner({
       !title.trim() ||
       !ingredients.trim() ||
       !instructions.trim() ||
-      !capturedImage
+      capturedImages.length === 0
     ) {
-      alert('Please fill in all fields and capture an image');
+      alert('Please fill in all fields and capture at least one image');
       return;
     }
 
@@ -208,32 +218,40 @@ export default function CameraScanner({
       console.log('Starting recipe save process...'); // Debug log
       console.log('User ID:', user?.id); // Debug log
 
-      // Convert base64 to blob
-      const response = await fetch(capturedImage);
-      const blob = await response.blob();
-      console.log('Blob created, size:', blob.size); // Debug log
+      // Upload all images to Supabase Storage
+      const imageUrls: string[] = [];
+      
+      for (let i = 0; i < capturedImages.length; i++) {
+        const response = await fetch(capturedImages[i]);
+        const blob = await response.blob();
+        console.log(`Blob ${i + 1} created, size:`, blob.size); // Debug log
 
-      // Upload image to Supabase Storage
-      const fileName = `${user!.id}/recipe-${Date.now()}.jpg`;
-      console.log('Uploading to storage:', fileName); // Debug log
+        // Upload image to Supabase Storage
+        const fileName = `${user!.id}/recipe-${Date.now()}-${i + 1}.jpg`;
+        console.log(`Uploading image ${i + 1} to storage:`, fileName); // Debug log
 
-      const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('recipe-images')
-        .upload(fileName, blob);
+        const { data: uploadData, error: uploadError } = await supabase.storage
+          .from('recipe-images')
+          .upload(fileName, blob);
 
-      if (uploadError) {
-        console.error('Storage upload error:', uploadError); // Debug log
-        throw new Error(`Storage upload failed: ${uploadError.message}`);
+        if (uploadError) {
+          console.error(`Storage upload error for image ${i + 1}:`, uploadError); // Debug log
+          throw new Error(`Storage upload failed for image ${i + 1}: ${uploadError.message}`);
+        }
+
+        console.log(`Storage upload successful for image ${i + 1}:`, uploadData); // Debug log
+
+        // Get public URL
+        const {
+          data: { publicUrl }
+        } = supabase.storage.from('recipe-images').getPublicUrl(fileName);
+
+        imageUrls.push(publicUrl);
+        console.log(`Public URL for image ${i + 1}:`, publicUrl); // Debug log
       }
 
-      console.log('Storage upload successful:', uploadData); // Debug log
-
-      // Get public URL
-      const {
-        data: { publicUrl }
-      } = supabase.storage.from('recipe-images').getPublicUrl(fileName);
-
-      console.log('Public URL:', publicUrl); // Debug log
+      // Use the first image as the main image_url for backward compatibility
+      const mainImageUrl = imageUrls[0];
 
       // Save recipe to database
       const recipeData = {
@@ -241,7 +259,7 @@ export default function CameraScanner({
         title: title.trim(),
         ingredients: ingredients.trim(),
         instructions: instructions.trim(),
-        image_url: publicUrl,
+        image_url: mainImageUrl,
         display_name:
           user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
       };
@@ -284,7 +302,7 @@ export default function CameraScanner({
         </div>
 
         <div className="p-6">
-          {!capturedImage ? (
+          {capturedImages.length === 0 ? (
             /* Camera View */
             <div className="space-y-4">
               <div className="relative bg-gray-900 rounded-lg overflow-hidden">
@@ -365,19 +383,105 @@ export default function CameraScanner({
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <div className="relative w-full h-48">
-                    <Image
-                      src={capturedImage}
-                      alt="Captured recipe"
-                      fill
-                      className="object-cover rounded-lg"
-                      sizes="(max-width: 768px) 100vw, 50vw"
-                    />
+                  {/* Multiple Images Display */}
+                  <div className="space-y-3">
+                    {capturedImages.map((image, index) => (
+                      <div key={index} className="relative">
+                        <div className="relative w-full h-48">
+                          <Image
+                            src={image}
+                            alt={`Recipe card ${index + 1}`}
+                            fill
+                            className="object-cover rounded-lg"
+                            sizes="(max-width: 768px) 100vw, 50vw"
+                          />
+                        </div>
+                        <button
+                          onClick={() => removeImage(index)}
+                          className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 transition-colors"
+                          title="Remove this image">
+                          <X className="h-4 w-4" />
+                        </button>
+                        <div className="absolute top-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
+                          Photo {index + 1}
+                        </div>
+                      </div>
+                    ))}
                   </div>
+                  
+                  {/* Add Another Photo Button */}
+                  {!showAddPhoto && (
+                    <button
+                      onClick={addAnotherPhoto}
+                      className="w-full mt-3 py-3 px-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-600 hover:border-gray-400 hover:text-gray-700 transition-colors">
+                      <Camera className="h-5 w-5 inline mr-2" />
+                      Add Another Photo
+                    </button>
+                  )}
+                  
+                  {/* Camera for Additional Photos */}
+                  {showAddPhoto && (
+                    <div className="mt-3 space-y-3">
+                      <div className="relative bg-gray-900 rounded-lg overflow-hidden">
+                        <Webcam
+                          ref={webcamRef}
+                          screenshotFormat="image/jpeg"
+                          videoConstraints={{
+                            facingMode: facingMode,
+                            width: { ideal: 640 },
+                            height: { ideal: 480 }
+                          }}
+                          className="w-full h-32 object-cover"
+                          onError={error => {
+                            console.error('Webcam error:', error);
+                            setCameraError(
+                              'Camera error. Please check permissions and try again.'
+                            );
+                          }}
+                          onUserMediaError={error => {
+                            console.error('User media error:', error);
+                            setCameraError(
+                              'Camera access denied. Please allow camera permissions and try again.'
+                            );
+                          }}
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="border-2 border-white border-dashed rounded-lg p-4 text-center text-white">
+                            <Camera className="h-6 w-6 mx-auto mb-1" />
+                            <p className="text-sm">Add another photo</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={capture}
+                          disabled={aiProcessing || !!cameraError}
+                          className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg font-medium hover:bg-blue-700 transition-all disabled:opacity-50">
+                          {aiProcessing ? (
+                            <>
+                              <Loader2 className="h-4 w-4 inline mr-2 animate-spin" />
+                              Processing...
+                            </>
+                          ) : (
+                            <>
+                              <Camera className="h-4 w-4 inline mr-2" />
+                              Capture
+                            </>
+                          )}
+                        </button>
+                        <button
+                          onClick={() => setShowAddPhoto(false)}
+                          className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  
                   {aiProcessing && (
                     <div className="mt-2 flex items-center justify-center gap-2 text-sm text-orange-600 bg-orange-50 p-2 rounded-lg">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      AI is reading your recipe card...
+                      AI is reading your recipe cards...
                     </div>
                   )}
                   {aiCompleted && !aiProcessing && (
@@ -440,20 +544,21 @@ export default function CameraScanner({
                 <button
                   onClick={retake}
                   className="flex-1 py-3 px-6 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
-                  Retake Photo
+                  Retake All Photos
                 </button>
               </div>
 
               {/* Debug info */}
               <div className="mt-4 p-3 bg-gray-100 rounded-lg text-xs text-gray-600">
                 <div>
-                  Debug: capturedImage = {capturedImage ? 'Set' : 'Not set'}
+                  Debug: capturedImages = {capturedImages.length} images
                 </div>
                 <div>Debug: title = &quot;{title}&quot;</div>
                 <div>Debug: ingredients = &quot;{ingredients}&quot;</div>
                 <div>Debug: instructions = &quot;{instructions}&quot;</div>
                 <div>Debug: aiProcessing = {aiProcessing ? 'Yes' : 'No'}</div>
                 <div>Debug: aiCompleted = {aiCompleted ? 'Yes' : 'No'}</div>
+                <div>Debug: showAddPhoto = {showAddPhoto ? 'Yes' : 'No'}</div>
               </div>
 
               {/* Floating Save Button for Mobile */}
@@ -464,7 +569,8 @@ export default function CameraScanner({
                     loading ||
                     !title.trim() ||
                     !ingredients.trim() ||
-                    !instructions.trim()
+                    !instructions.trim() ||
+                    capturedImages.length === 0
                   }
                   className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 px-6 rounded-lg font-medium shadow-xl border-2 border-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-lg">
                   {loading ? (

@@ -16,23 +16,28 @@ export async function POST(request: NextRequest) {
     console.log('OpenAI API key found, processing image...');
 
     const formData = await request.formData();
-    const image = formData.get('image') as File;
+    const images = formData.getAll('images') as File[];
 
-    if (!image) {
-      return NextResponse.json({ error: 'No image provided' }, { status: 400 });
+    if (!images || images.length === 0) {
+      return NextResponse.json({ error: 'No images provided' }, { status: 400 });
     }
 
-    console.log('Image received, size:', image.size, 'bytes');
+    console.log(`${images.length} images received, processing...`);
 
-    // Convert image to base64 for API calls
-    const bytes = await image.arrayBuffer();
-    const buffer = Buffer.from(bytes);
-    const base64Image = buffer.toString('base64');
+    // Convert all images to base64 for API calls
+    const base64Images: string[] = [];
+    for (const image of images) {
+      const bytes = await image.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const base64Image = buffer.toString('base64');
+      base64Images.push(base64Image);
+      console.log(`Image ${base64Images.length} converted to base64, size: ${image.size} bytes`);
+    }
 
-    console.log('Image converted to base64, calling OpenAI...');
+    console.log('All images converted to base64, calling OpenAI...');
 
-    // Use OpenAI GPT-4 Vision for recipe extraction
-    const recipeData = await extractWithOpenAI(base64Image);
+    // Use OpenAI GPT-4 Vision for recipe extraction with multiple images
+    const recipeData = await extractWithOpenAI(base64Images);
 
     console.log('OpenAI response received:', recipeData);
 
@@ -51,7 +56,7 @@ export async function POST(request: NextRequest) {
 }
 
 // OpenAI GPT-4 Vision approach
-async function extractWithOpenAI(base64Image: string) {
+async function extractWithOpenAI(base64Images: string[]) {
   try {
     console.log('Making OpenAI API request...');
 
@@ -69,25 +74,27 @@ async function extractWithOpenAI(base64Image: string) {
             content: [
               {
                 type: 'text',
-                text: `Please analyze this handwritten recipe card and extract the following information in JSON format:
+                text: `Please analyze these ${base64Images.length} handwritten recipe card images and extract the following information in JSON format:
                 {
                   "title": "Recipe name",
                   "ingredients": "List of ingredients with measurements",
                   "instructions": "Step-by-step cooking instructions"
                 }
 
+                These images may be different sides of the same recipe card, multiple recipe cards, or parts of a longer recipe. Please combine all the information from all images to create a complete recipe.
+
                 Please be as accurate as possible with the handwriting. If something is unclear, make your best guess.`
               },
-              {
-                type: 'image_url',
+              ...base64Images.map(base64Image => ({
+                type: 'image_url' as const,
                 image_url: {
                   url: `data:image/jpeg;base64,${base64Image}`
                 }
-              }
+              }))
             ]
           }
         ],
-        max_tokens: 1000
+        max_tokens: 1500
       })
     });
 
