@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from 'react';
 import Webcam from 'react-webcam';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
-import { X, Camera, RotateCcw, Save } from 'lucide-react';
+import { X, Camera, RotateCcw, Save, Sparkles, Loader2 } from 'lucide-react';
 
 interface CameraScannerProps {
   onClose: () => void;
@@ -22,22 +22,82 @@ export default function CameraScanner({
   const [ingredients, setIngredients] = useState('');
   const [instructions, setInstructions] = useState('');
   const [loading, setLoading] = useState(false);
+  const [aiProcessing, setAiProcessing] = useState(false);
+  const [aiCompleted, setAiCompleted] = useState(false);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>(
     'environment'
   );
+
+  const extractRecipeWithAI = async (imageData: string) => {
+    setAiProcessing(true);
+    try {
+      console.log('Starting AI extraction...'); // Debug log
+
+      // Convert base64 to blob
+      const response = await fetch(imageData);
+      const blob = await response.blob();
+
+      // Create FormData for the API
+      const formData = new FormData();
+      formData.append('image', blob, 'recipe-card.jpg');
+
+      console.log('Calling AI API...'); // Debug log
+
+      // Call AI service to extract recipe
+      const aiResponse = await fetch('/api/extract-recipe', {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!aiResponse.ok) {
+        const errorText = await aiResponse.text();
+        console.error('AI API error:', aiResponse.status, errorText);
+        throw new Error(`AI extraction failed: ${aiResponse.status}`);
+      }
+
+      const recipeData = await aiResponse.json();
+      console.log('AI response:', recipeData); // Debug log
+
+      // Auto-fill the form fields
+      setTitle(recipeData.title || '');
+      setIngredients(recipeData.ingredients || '');
+      setInstructions(recipeData.instructions || '');
+
+      setAiCompleted(true); // Mark AI as completed
+
+      console.log('Fields updated:', {
+        title: recipeData.title,
+        ingredients: recipeData.ingredients,
+        instructions: recipeData.instructions
+      }); // Debug log
+    } catch (error) {
+      console.error('AI extraction error:', error);
+      // Show error to user for debugging
+      alert(`AI extraction failed: ${error.message}. Please fill in manually.`);
+    } finally {
+      setAiProcessing(false);
+    }
+  };
 
   const capture = useCallback(() => {
     if (webcamRef.current) {
       const imageSrc = webcamRef.current.getScreenshot();
       setCapturedImage(imageSrc);
+
+      // Automatically extract recipe with AI
+      if (imageSrc) {
+        console.log('Image captured, calling AI...'); // Debug log
+        extractRecipeWithAI(imageSrc);
+      }
     }
-  }, [webcamRef]);
+  }, []);
 
   const retake = () => {
     setCapturedImage(null);
     setTitle('');
     setIngredients('');
     setInstructions('');
+    setAiCompleted(false);
   };
 
   const toggleCamera = () => {
@@ -133,9 +193,19 @@ export default function CameraScanner({
               <div className="flex gap-3">
                 <button
                   onClick={capture}
-                  className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-6 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition-all">
-                  <Camera className="h-5 w-5 inline mr-2" />
-                  Capture Image
+                  disabled={aiProcessing}
+                  className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-6 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition-all disabled:opacity-50">
+                  {aiProcessing ? (
+                    <>
+                      <Loader2 className="h-5 w-5 inline mr-2 animate-spin" />
+                      Processing...
+                    </>
+                  ) : (
+                    <>
+                      <Camera className="h-5 w-5 inline mr-2" />
+                      Capture Image
+                    </>
+                  )}
                 </button>
                 <button
                   onClick={toggleCamera}
@@ -154,13 +224,30 @@ export default function CameraScanner({
                     alt="Captured recipe"
                     className="w-full h-48 object-cover rounded-lg"
                   />
+                  {aiProcessing && (
+                    <div className="mt-2 flex items-center justify-center gap-2 text-sm text-orange-600 bg-orange-50 p-2 rounded-lg">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      AI is reading your recipe card...
+                    </div>
+                  )}
+                  {aiCompleted && !aiProcessing && (
+                    <div className="mt-2 flex items-center justify-center gap-2 text-sm text-green-600 bg-green-50 p-2 rounded-lg">
+                      <Sparkles className="h-4 w-4" />
+                      AI has extracted your recipe!
+                    </div>
+                  )}
                 </div>
 
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Recipe Title
-                    </label>
+                    <div className="flex items-center gap-2 mb-1">
+                      <label className="block text-sm font-medium text-gray-700">
+                        Recipe Title
+                      </label>
+                      {aiProcessing && (
+                        <Sparkles className="h-4 w-4 text-orange-500 animate-pulse" />
+                      )}
+                    </div>
                     <input
                       type="text"
                       value={title}
