@@ -50,7 +50,7 @@ export default function CameraScanner({
 
       // Create FormData for the API with multiple images
       const formData = new FormData();
-      
+
       // Add all images to the form data
       for (let i = 0; i < imageDataArray.length; i++) {
         const response = await fetch(imageDataArray[i]);
@@ -159,7 +159,11 @@ export default function CameraScanner({
       setCapturedImages(newImages);
 
       // Automatically extract recipe with AI using all images
-      console.log('Image captured, calling AI with', newImages.length, 'images...'); // Debug log
+      console.log(
+        'Image captured, calling AI with',
+        newImages.length,
+        'images...'
+      ); // Debug log
       extractRecipeWithAI(newImages);
     } catch (error) {
       console.error('Error in capture function:', error);
@@ -220,7 +224,7 @@ export default function CameraScanner({
 
       // Upload all images to Supabase Storage
       const imageUrls: string[] = [];
-      
+
       for (let i = 0; i < capturedImages.length; i++) {
         const response = await fetch(capturedImages[i]);
         const blob = await response.blob();
@@ -235,11 +239,19 @@ export default function CameraScanner({
           .upload(fileName, blob);
 
         if (uploadError) {
-          console.error(`Storage upload error for image ${i + 1}:`, uploadError); // Debug log
-          throw new Error(`Storage upload failed for image ${i + 1}: ${uploadError.message}`);
+          console.error(
+            `Storage upload error for image ${i + 1}:`,
+            uploadError
+          ); // Debug log
+          throw new Error(
+            `Storage upload failed for image ${i + 1}: ${uploadError.message}`
+          );
         }
 
-        console.log(`Storage upload successful for image ${i + 1}:`, uploadData); // Debug log
+        console.log(
+          `Storage upload successful for image ${i + 1}:`,
+          uploadData
+        ); // Debug log
 
         // Get public URL
         const {
@@ -408,7 +420,7 @@ export default function CameraScanner({
                       </div>
                     ))}
                   </div>
-                  
+
                   {/* Add Another Photo Button */}
                   {!showAddPhoto && (
                     <button
@@ -418,7 +430,7 @@ export default function CameraScanner({
                       Add Another Photo
                     </button>
                   )}
-                  
+
                   {/* Camera for Additional Photos */}
                   {showAddPhoto && (
                     <div className="mt-3 space-y-3">
@@ -477,7 +489,7 @@ export default function CameraScanner({
                       </div>
                     </div>
                   )}
-                  
+
                   {aiProcessing && (
                     <div className="mt-2 flex items-center justify-center gap-2 text-sm text-orange-600 bg-orange-50 p-2 rounded-lg">
                       <Loader2 className="h-4 w-4 animate-spin" />

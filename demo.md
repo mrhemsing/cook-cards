@@ -1,6 +1,6 @@
 # 🎯 Quick Demo Guide
 
-Want to see Taste of Time in action? Follow these steps to get up and running quickly!
+Want to see Mom&apos;s Yums in action? Follow these steps to get up and running quickly!
 
 ## 🚀 Quick Start
 

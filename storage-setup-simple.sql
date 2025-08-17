@@ -1,4 +1,4 @@
--- Taste of Time Simple Storage Setup Script
+-- Mom&apos;s Yums Simple Storage Setup Script
 -- Alternative approach with simpler policies
 
 -- Create storage bucket for recipe images (only if it doesn't exist)

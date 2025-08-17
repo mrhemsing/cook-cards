@@ -1,4 +1,4 @@
-# 🍳 Taste Legacy - Recipes Preserved for Generations
+# 🍳 Mom&apos;s Yums - Recipes Preserved for Generations
 
 A simple and intuitive Next.js web application that lets you scan handwritten recipe cards and organize them into your own digital recipe book. Perfect for preserving family recipes and organizing your cooking collection!
 
@@ -25,7 +25,7 @@ A simple and intuitive Next.js web application that lets you scan handwritten re
 
 ```bash
 git clone <your-repo-url>
-cd taste-legacy
+cd moms-yums
 npm install
 ```
 

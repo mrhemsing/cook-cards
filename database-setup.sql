@@ -1,4 +1,4 @@
--- Taste of Time Database Setup Script
+-- Mom&apos;s Yums Database Setup Script
 -- Run this in your Supabase SQL Editor
 
 -- Create recipes table

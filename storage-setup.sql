@@ -1,4 +1,4 @@
--- Taste of Time Storage Setup Script
+-- Mom&apos;s Yums Storage Setup Script
 -- Run this in your Supabase SQL Editor to fix storage issues
 
 -- Create storage bucket for recipe images (only if it doesn't exist)

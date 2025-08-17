@@ -34,7 +34,7 @@ export default function CollectionClient({
                   <Camera className="h-6 w-6 text-white" />
                 </div>
                 <h1 className="text-xl font-bold text-gray-900">
-                  Taste Legacy
+                  Mom&apos;s Yums
                 </h1>
               </Link>
             </div>
@@ -123,9 +123,9 @@ export default function CollectionClient({
             Inspired by this collection?
           </h3>
           <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-            Start preserving your own family recipes with Taste Legacy. Scan
+            Start preserving your own family recipes with Mom&apos;s Yums. Scan
             handwritten recipe cards, organize your collection, and share your
-            culinary legacy with loved ones.
+            culinary treasures with loved ones.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link

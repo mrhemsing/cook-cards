@@ -66,7 +66,7 @@ export default function RecipeBook() {
           title: `${
             user?.user_metadata?.full_name || user?.email
           }'s Recipe Collection`,
-          text: `Check out my personal recipe collection on Taste Legacy! I have ${recipes.length} recipes saved.`,
+          text: `Check out my personal recipe collection on Mom&apos;s Yums! I have ${recipes.length} recipes saved.`,
           url: shareUrl
         });
       } else {
@@ -104,7 +104,9 @@ export default function RecipeBook() {
               <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-lg mr-3">
                 <ChefHat className="h-6 w-6 text-white" />
               </div>
-              <h1 className="text-xl font-bold text-gray-900">Taste Legacy</h1>
+              <h1 className="text-xl font-bold text-gray-900">
+                Mom&apos;s Yums
+              </h1>
             </div>
 
             <div className="flex flex-col items-end space-y-2">

@@ -1,6 +1,6 @@
 # 🚀 Deployment Guide
 
-This guide will help you deploy your Taste of Time application to various platforms.
+This guide will help you deploy your Mom&apos;s Yums application to various platforms.
 
 ## 📋 Prerequisites
 
