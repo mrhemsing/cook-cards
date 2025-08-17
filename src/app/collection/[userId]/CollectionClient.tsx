@@ -129,7 +129,7 @@ export default function CollectionClient({
             handwritten recipe cards, organize your collection, and share your
             culinary treasures with loved ones.
           </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <div className="flex flex-col sm:flex-row gap-4 justify-center px-4 sm:px-0">
             <Link
               href="/"
               className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium rounded-lg hover:from-orange-600 hover:to-red-600 transition-all shadow-lg">
