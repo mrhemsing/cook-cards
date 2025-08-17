@@ -5,6 +5,7 @@ import Webcam from 'react-webcam';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { X, Camera, RotateCcw, Save, Sparkles, Loader2 } from 'lucide-react';
+import Image from 'next/image';
 
 interface CameraScannerProps {
   onClose: () => void;
@@ -362,11 +363,15 @@ export default function CameraScanner({
             <div className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <img
-                    src={capturedImage}
-                    alt="Captured recipe"
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
+                  <div className="relative w-full h-48">
+                    <Image
+                      src={capturedImage}
+                      alt="Captured recipe"
+                      fill
+                      className="object-cover rounded-lg"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                  </div>
                   {aiProcessing && (
                     <div className="mt-2 flex items-center justify-center gap-2 text-sm text-orange-600 bg-orange-50 p-2 rounded-lg">
                       <Loader2 className="h-4 w-4 animate-spin" />

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { X, Save, Upload } from 'lucide-react';
+import Image from 'next/image';
 
 interface RecipeFormProps {
   onClose: () => void;
@@ -161,11 +162,15 @@ export default function RecipeForm({
 
               {imagePreview && (
                 <div className="relative">
-                  <img
-                    src={imagePreview}
-                    alt="Recipe preview"
-                    className="w-full h-48 object-cover rounded-lg"
-                  />
+                  <div className="relative w-full h-48">
+                    <Image
+                      src={imagePreview}
+                      alt="Recipe preview"
+                      fill
+                      className="object-cover rounded-lg"
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                  </div>
                   <button
                     onClick={() => {
                       setImageFile(null);

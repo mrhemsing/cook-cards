@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Edit, Trash2, Eye, X, Share2 } from 'lucide-react';
+import Image from 'next/image';
 
 interface Recipe {
   id: string;
@@ -108,7 +109,7 @@ export default function RecipeList({
           `${window.location.origin}/recipe/${recipe.id}`
         );
         alert('Recipe link copied to clipboard!');
-      } catch (clipboardError) {
+      } catch {
         alert('Failed to share recipe. Please try again.');
       }
     }
@@ -160,10 +161,12 @@ export default function RecipeList({
             {/* Recipe Image */}
             <div className="h-48 bg-gray-100 relative">
               {recipe.image_url ? (
-                <img
+                <Image
                   src={recipe.image_url}
                   alt={recipe.title}
-                  className="w-full h-full object-cover"
+                  fill
+                  className="object-cover"
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                 />
               ) : (
                 <div className="flex items-center justify-center h-full text-gray-400">
@@ -248,11 +251,15 @@ export default function RecipeList({
               </div>
 
               {selectedRecipe.image_url && (
-                <img
-                  src={selectedRecipe.image_url}
-                  alt={selectedRecipe.title}
-                  className="w-full h-64 object-cover rounded-lg mb-6"
-                />
+                <div className="relative w-full h-64 mb-6">
+                  <Image
+                    src={selectedRecipe.image_url}
+                    alt={selectedRecipe.title}
+                    fill
+                    className="object-cover rounded-lg"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  />
+                </div>
               )}
 
               <div className="space-y-6">
