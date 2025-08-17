@@ -111,7 +111,7 @@ export default function RecipeBook() {
               <span className="text-sm text-gray-600 text-right">
                 Welcome, {user?.user_metadata?.full_name || user?.email}
               </span>
-              <div className="flex items-center gap-2">
+              <div className="flex flex-col sm:flex-row items-end sm:items-center gap-2">
                 <button
                   onClick={handleShareRecipeBook}
                   className="flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-colors"
