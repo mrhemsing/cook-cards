@@ -73,7 +73,8 @@ export default function CameraScanner({
     } catch (error) {
       console.error('AI extraction error:', error);
       // Show error to user for debugging
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error occurred';
       alert(`AI extraction failed: ${errorMessage}. Please fill in manually.`);
     } finally {
       setAiProcessing(false);
@@ -286,25 +287,50 @@ export default function CameraScanner({
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4">
+              {/* Save Recipe Button - Always Visible */}
+              <div className="pt-4">
+                <button
+                  onClick={saveRecipe}
+                  disabled={
+                    loading ||
+                    !title.trim() ||
+                    !ingredients.trim() ||
+                    !instructions.trim()
+                  }
+                  className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 px-6 rounded-lg font-medium hover:from-green-600 hover:to-blue-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed text-lg">
+                  {loading ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
+                      Saving Recipe...
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center gap-2">
+                      <Save className="h-6 w-6" />
+                      Save Recipe to Your Collection
+                    </div>
+                  )}
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex gap-3 pt-2">
                 <button
                   onClick={retake}
                   className="flex-1 py-3 px-6 border border-gray-300 rounded-lg text-gray-700 font-medium hover:bg-gray-50 transition-colors">
                   Retake Photo
                 </button>
-                <button
-                  onClick={saveRecipe}
-                  disabled={loading}
-                  className="flex-1 bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-6 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition-all disabled:opacity-50">
-                  {loading ? (
-                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white mx-auto"></div>
-                  ) : (
-                    <>
-                      <Save className="h-5 w-5 inline mr-2" />
-                      Save Recipe
-                    </>
-                  )}
-                </button>
+              </div>
+
+              {/* Debug info */}
+              <div className="mt-4 p-3 bg-gray-100 rounded-lg text-xs text-gray-600">
+                <div>
+                  Debug: capturedImage = {capturedImage ? 'Set' : 'Not set'}
+                </div>
+                <div>Debug: title = "{title}"</div>
+                <div>Debug: ingredients = "{ingredients}"</div>
+                <div>Debug: instructions = "{instructions}"</div>
+                <div>Debug: aiProcessing = {aiProcessing ? 'Yes' : 'No'}</div>
+                <div>Debug: aiCompleted = {aiCompleted ? 'Yes' : 'No'}</div>
               </div>
             </div>
           )}
