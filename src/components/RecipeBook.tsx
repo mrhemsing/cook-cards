@@ -135,8 +135,8 @@ export default function RecipeBook() {
                 alt="Mom's Yums Logo"
                 className="h-8 w-8 mr-3"
               />
-              <h1 className="text-xl font-bold text-gray-900">
-                Mom&apos;s Yums
+              <h1 className="text-xl font-bold text-[#C76572]">
+                MOM&apos;S YUMS
               </h1>
             </div>
 
