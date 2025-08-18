@@ -5,6 +5,11 @@
   --foreground: #171717;
 }
 
+/* Custom font classes */
+.font-cormorant-garamond {
+  font-family: var(--font-cormorant-garamond), serif;
+}
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
