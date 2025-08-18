@@ -95,15 +95,67 @@ export default function CollectionClient({
 
         {/* Category Filter */}
         <div className="mb-8">
-          <CategoryFilter
-            categories={categories}
-            selectedCategory={selectedCategory}
-            onCategorySelect={setSelectedCategory}
-            className="max-w-2xl mx-auto"
-          />
+          <div className="text-center mb-4">
+            <p className="text-sm text-gray-500">
+              Debug: Categories loaded: {categories.length}
+            </p>
+            <p className="text-sm text-gray-500">
+              Debug: Selected category: {selectedCategory || 'None'}
+            </p>
+          </div>
+          {/* Simple Category Filter Test */}
+          <div className="max-w-2xl mx-auto p-4 bg-gray-50 rounded-lg border">
+            <h4 className="text-sm font-medium text-gray-700 mb-3">
+              Filter by Category
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  selectedCategory === null
+                    ? 'bg-gray-900 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}>
+                All
+              </button>
+              {categories.map(category => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                    selectedCategory === category.id
+                      ? 'text-white shadow-md'
+                      : 'hover:opacity-80'
+                  }`}
+                  style={{
+                    backgroundColor:
+                      selectedCategory === category.id
+                        ? category.color
+                        : category.color + '20',
+                    color:
+                      selectedCategory === category.id
+                        ? 'white'
+                        : category.color,
+                    border:
+                      selectedCategory === category.id
+                        ? 'none'
+                        : `1px solid ${category.color}40`
+                  }}>
+                  {category.display_name}
+                </button>
+              ))}
+            </div>
+          </div>
         </div>
 
         {/* Recipe Grid */}
+        <div className="mb-4 text-center">
+          <p className="text-sm text-gray-500">
+            Debug: Total recipes: {recipes.length} | Filtered:{' '}
+            {filteredRecipes.length} | Category filter:{' '}
+            {selectedCategory || 'All'}
+          </p>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           {filteredRecipes.map(recipe => (
             <div
@@ -140,15 +192,23 @@ export default function CollectionClient({
               {/* Recipe Content */}
               <div className="p-4">
                 {/* Category Badge */}
-                {recipe.category && (
-                  <div className="mb-2">
+                <div className="mb-2">
+                  {recipe.category ? (
                     <span
                       className="inline-block px-2 py-1 text-xs font-medium rounded-full text-white"
                       style={{ backgroundColor: recipe.category.color }}>
                       {recipe.category.display_name}
                     </span>
+                  ) : (
+                    <span className="inline-block px-2 py-1 text-xs font-medium rounded-full bg-gray-400 text-white">
+                      No Category
+                    </span>
+                  )}
+                  <div className="text-xs text-gray-500 mt-1">
+                    Debug: category_id={recipe.category_id || 'null'}, category=
+                    {recipe.category ? 'loaded' : 'missing'}
                   </div>
-                )}
+                </div>
 
                 <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
                   {recipe.title}
