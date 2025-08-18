@@ -138,7 +138,9 @@ export default function RecipeBook() {
                 height={32}
                 className="h-8 w-8 mr-3"
               />
-              <h1 className="text-xl font-bold text-[#C76572] font-cormorant-garamond">
+              <h1
+                className="text-xl text-[#C76572] font-cormorant-garamond"
+                style={{ fontWeight: 900 }}>
                 MOM&apos;S YUMS
               </h1>
             </div>

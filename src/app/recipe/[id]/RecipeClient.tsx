@@ -38,7 +38,9 @@ export default function RecipeClient({ recipe }: RecipeClientProps) {
                 <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-lg mr-3">
                   <UserPlus className="h-6 w-6 text-white" />
                 </div>
-                <h1 className="text-xl font-bold text-gray-900 font-cormorant-garamond">
+                <h1
+                  className="text-xl text-gray-900 font-cormorant-garamond"
+                  style={{ fontWeight: 900 }}>
                   Mom&apos;s Yums
                 </h1>
               </Link>
