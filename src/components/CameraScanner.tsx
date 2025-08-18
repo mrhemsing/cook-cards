@@ -35,7 +35,8 @@ export default function CameraScanner({
   // Add OCR service configurations
   const OCR_SERVICES = {
     GOOGLE_VISION: 'google_vision',
-    PRIMARY_AI: 'primary_ai'
+    PRIMARY_AI: 'primary_ai',
+    AGGRESSIVE_ENHANCEMENT: 'aggressive_enhancement'
   };
 
   // Add service-specific image preprocessing
@@ -88,6 +89,42 @@ export default function CameraScanner({
             }
 
             ctx.putImageData(imageData, 0, 0);
+            break;
+
+          case OCR_SERVICES.AGGRESSIVE_ENHANCEMENT:
+            // Aggressive enhancement for difficult cases
+            canvas.width = img.width * 2;
+            canvas.height = img.height * 2;
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            const aggressiveImageData = ctx.getImageData(
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
+            const aggressiveData = aggressiveImageData.data;
+
+            for (let i = 0; i < aggressiveData.length; i += 4) {
+              // Much more aggressive contrast and brightness enhancement
+              const gray =
+                (aggressiveData[i] +
+                  aggressiveData[i + 1] +
+                  aggressiveData[i + 2]) /
+                3;
+              const enhanced = Math.min(
+                255,
+                Math.max(0, (gray - 128) * 1.8 + 128)
+              );
+
+              aggressiveData[i] = enhanced; // R
+              aggressiveData[i + 1] = enhanced; // G
+              aggressiveData[i + 2] = enhanced; // B
+            }
+
+            ctx.putImageData(aggressiveImageData, 0, 0);
             break;
 
           default:
@@ -302,6 +339,53 @@ export default function CameraScanner({
               console.log('Primary AI filled in missing instructions');
             }
           }
+
+          // If still missing fields, try with different image preprocessing
+          const stillMissingFields =
+            !recipeData.title ||
+            recipeData.title.trim().length <= 3 ||
+            !recipeData.ingredients ||
+            recipeData.ingredients.trim().length <= 10 ||
+            !recipeData.instructions ||
+            recipeData.instructions.trim().length <= 10;
+
+          if (stillMissingFields && imageDataArray.length > 0) {
+            console.log(
+              'Still missing fields, trying with enhanced image preprocessing...'
+            );
+
+            // Try with aggressive image enhancement
+            const enhancedImage = await preprocessForService(
+              imageDataArray[0],
+              OCR_SERVICES.AGGRESSIVE_ENHANCEMENT
+            );
+
+            // Try Google Vision again with the enhanced image
+            const retryResult = await extractWithGoogleVision(enhancedImage);
+
+            if (retryResult) {
+              console.log('Enhanced preprocessing retry results:', retryResult);
+
+              // Fill in any still-missing fields
+              if (!recipeData.title || recipeData.title.trim().length <= 3) {
+                recipeData.title = retryResult.title || recipeData.title;
+              }
+              if (
+                !recipeData.ingredients ||
+                recipeData.ingredients.trim().length <= 10
+              ) {
+                recipeData.ingredients =
+                  retryResult.ingredients || recipeData.ingredients;
+              }
+              if (
+                !recipeData.instructions ||
+                recipeData.instructions.trim().length <= 10
+              ) {
+                recipeData.instructions =
+                  retryResult.instructions || recipeData.instructions;
+              }
+            }
+          }
         }
       }
 
@@ -310,7 +394,41 @@ export default function CameraScanner({
         setTitle(recipeData.title || '');
         setIngredients(recipeData.ingredients || '');
         setInstructions(recipeData.instructions || '');
-        setAiCompleted(true);
+
+        // Check if we still have missing fields after all services
+        const finalHasTitle =
+          recipeData.title &&
+          typeof recipeData.title === 'string' &&
+          recipeData.title.trim().length > 3;
+
+        const finalHasIngredients =
+          recipeData.ingredients &&
+          typeof recipeData.ingredients === 'string' &&
+          recipeData.ingredients.trim().length > 10;
+
+        const finalHasInstructions =
+          recipeData.instructions &&
+          typeof recipeData.instructions === 'string' &&
+          recipeData.instructions.trim().length > 10;
+
+        // If any field is still missing, automatically retry with different approach
+        if (!finalHasTitle || !finalHasIngredients || !finalHasInstructions) {
+          console.log(
+            'Fields still missing after all services, auto-retrying...'
+          );
+
+          // Wait a moment for any pending state updates, then retry
+          setTimeout(() => {
+            if (imageDataArray.length > 0) {
+              console.log(
+                'Auto-retrying extraction with different approach...'
+              );
+              extractRecipeWithMultipleServices(imageDataArray, retryCount + 1);
+            }
+          }, 1000);
+        } else {
+          setAiCompleted(true);
+        }
       }
     } catch (error) {
       console.error('Multi-service extraction failed:', error);
