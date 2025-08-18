@@ -19,7 +19,7 @@ A simple and intuitive Next.js web application that lets you scan handwritten re
 
 - Node.js 18+ installed
 - A Supabase account (free tier works great!)
-- Google developer account (for user authentication)
+- Google developer account (for authentication)
 
 ### 1. Clone and Install
 
