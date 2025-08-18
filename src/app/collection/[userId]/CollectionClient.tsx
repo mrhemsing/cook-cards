@@ -95,18 +95,22 @@ export default function CollectionClient({
 
         {/* Category Filter */}
         <div className="mb-8">
-          <div className="text-center mb-4">
-            <p className="text-sm text-gray-500">
+          <div className="text-center mb-4 p-4 bg-red-100 border border-red-300 rounded-lg">
+            <h3 className="text-lg font-bold text-red-800 mb-2">🚨 DEBUG MODE ACTIVE 🚨</h3>
+            <p className="text-sm text-red-700">
               Debug: Categories loaded: {categories.length}
             </p>
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-red-700">
               Debug: Selected category: {selectedCategory || 'None'}
+            </p>
+            <p className="text-sm text-red-700">
+              Debug: Recipes count: {recipes.length}
             </p>
           </div>
           {/* Simple Category Filter Test */}
-          <div className="max-w-2xl mx-auto p-4 bg-gray-50 rounded-lg border">
-            <h4 className="text-sm font-medium text-gray-700 mb-3">
-              Filter by Category
+          <div className="max-w-2xl mx-auto p-4 bg-blue-100 border-2 border-blue-400 rounded-lg">
+            <h4 className="text-lg font-bold text-blue-800 mb-3 text-center">
+              🎯 CATEGORY FILTERS 🎯
             </h4>
             <div className="flex flex-wrap gap-2">
               <button
