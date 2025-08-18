@@ -31,7 +31,60 @@ export default function CameraScanner({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [showAddPhoto, setShowAddPhoto] = useState(false);
 
-  const extractRecipeWithAI = async (imageDataArray: string[]) => {
+  // Add image enhancement before AI processing
+  const enhanceImageForOCR = (imageData: string): Promise<string> => {
+    return new Promise(resolve => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.error('Failed to get canvas context');
+        resolve(imageData); // Fallback to original image
+        return;
+      }
+
+      const img = new window.Image();
+
+      img.onload = () => {
+        // Increase canvas size for better resolution
+        canvas.width = img.width * 2;
+        canvas.height = img.height * 2;
+
+        // Apply image enhancements
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+
+        // Draw with higher resolution
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+        // Apply contrast and brightness adjustments
+        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        const data = imageData.data;
+
+        for (let i = 0; i < data.length; i += 4) {
+          // Enhance contrast
+          data[i] = Math.min(255, Math.max(0, (data[i] - 128) * 1.2 + 128)); // Red
+          data[i + 1] = Math.min(
+            255,
+            Math.max(0, (data[i + 1] - 128) * 1.2 + 128)
+          ); // Green
+          data[i + 2] = Math.min(
+            255,
+            Math.max(0, (data[i + 2] - 128) * 1.2 + 128)
+          ); // Blue
+        }
+
+        ctx.putImageData(imageData, 0, 0);
+        resolve(canvas.toDataURL('image/jpeg', 0.95));
+      };
+
+      img.src = imageData;
+    });
+  };
+
+  const extractRecipeWithAI = async (
+    imageDataArray: string[],
+    retryCount = 0
+  ) => {
     if (!imageDataArray || imageDataArray.length === 0) {
       console.error('No image data provided to AI extraction');
       return;
@@ -39,7 +92,7 @@ export default function CameraScanner({
 
     setAiProcessing(true);
     try {
-      console.log('Starting AI extraction...'); // Debug log
+      console.log(`Starting AI extraction... (attempt ${retryCount + 1})`); // Debug log
 
       // Validate image data format for all images
       for (const imageData of imageDataArray) {
@@ -98,6 +151,23 @@ export default function CameraScanner({
           throw new Error('Invalid AI response format');
         }
 
+        // Check if ingredients are missing or too short
+        const hasIngredients =
+          recipeData.ingredients &&
+          typeof recipeData.ingredients === 'string' &&
+          recipeData.ingredients.trim().length > 10;
+
+        // If ingredients are missing and we have multiple images, try with different combinations
+        if (!hasIngredients && imageDataArray.length > 1 && retryCount < 2) {
+          console.log(
+            'Ingredients missing, trying with different image combination...'
+          );
+
+          // Try with just the first image
+          const singleImageArray = [imageDataArray[0]];
+          return extractRecipeWithAI(singleImageArray, retryCount + 1);
+        }
+
         // Auto-fill the form fields with safe defaults and type checking
         setTitle(typeof recipeData.title === 'string' ? recipeData.title : '');
         setIngredients(
@@ -127,7 +197,18 @@ export default function CameraScanner({
       }
     } catch (error) {
       console.error('AI extraction error:', error);
-      // Show error to user for debugging
+
+      // If we have multiple images and this failed, try with fewer images
+      if (imageDataArray.length > 1 && retryCount < 2) {
+        console.log('AI extraction failed, trying with fewer images...');
+        const fewerImages = imageDataArray.slice(
+          0,
+          Math.ceil(imageDataArray.length / 2)
+        );
+        return extractRecipeWithAI(fewerImages, retryCount + 1);
+      }
+
+      // Show error to user
       const errorMessage =
         error instanceof Error ? error.message : 'Unknown error occurred';
       alert(`AI extraction failed: ${errorMessage}. Please fill in manually.`);
@@ -156,7 +237,7 @@ export default function CameraScanner({
 
       console.log('Image captured successfully, size:', imageSrc.length);
 
-      // Crop the image to the recipe card boundaries
+      // Crop and enhance the image
       cropImageToRecipeCard(imageSrc)
         .then(croppedImage => {
           if (!croppedImage) {
@@ -165,26 +246,36 @@ export default function CameraScanner({
             return;
           }
 
-          const newImages = [...capturedImages, croppedImage];
+          // Enhance the cropped image for better OCR
+          return enhanceImageForOCR(croppedImage);
+        })
+        .then(enhancedImage => {
+          if (!enhancedImage) {
+            console.error('Failed to enhance image');
+            alert('Failed to process image. Please try again.');
+            return;
+          }
+
+          const newImages = [...capturedImages, enhancedImage];
           setCapturedImages(newImages);
 
           // Automatically extract recipe with AI using all images
           console.log(
-            'Image captured and cropped, calling AI with',
+            'Image captured, cropped, and enhanced, calling AI with',
             newImages.length,
             'images...'
           ); // Debug log
           extractRecipeWithAI(newImages);
         })
         .catch(error => {
-          console.error('Error cropping image:', error);
+          console.error('Error processing image:', error);
           alert('Failed to process image. Please try again.');
         });
     } catch (error) {
       console.error('Error in capture function:', error);
       alert('Error capturing image. Please try again.');
     }
-  }, []);
+  }, [capturedImages]);
 
   const retake = () => {
     setCapturedImages([]);
@@ -440,10 +531,20 @@ export default function CameraScanner({
                         className="border-2 border-white border-dashed rounded-lg p-8 text-center text-white"
                         style={{ width: '80%', height: '80%' }}>
                         <Camera className="h-12 w-12 mx-auto mb-2" />
-                        <p>Position your recipe card within this frame</p>
+                        <p className="text-sm font-medium">
+                          Position your recipe card within this frame
+                        </p>
                         <p className="text-xs opacity-75 mt-1">
                           Only this area will be saved
                         </p>
+                        {/* Add helpful tips */}
+                        <div className="mt-3 text-xs opacity-90 text-left">
+                          <p>📱 Tips for better results:</p>
+                          <p>• Ensure good lighting</p>
+                          <p>• Keep phone steady</p>
+                          <p>• Avoid shadows on text</p>
+                          <p>• Make sure text is clearly visible</p>
+                        </div>
                       </div>
                     </div>
                   </>
@@ -472,6 +573,19 @@ export default function CameraScanner({
                   className="px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
                   <RotateCcw className="h-5 w-5" />
                 </button>
+              </div>
+
+              {/* Add guidance for multiple photos */}
+              <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                <h4 className="text-sm font-medium text-blue-800 mb-2">
+                  💡 Pro Tip: Take Multiple Photos
+                </h4>
+                <p className="text-xs text-blue-700">
+                  For handwritten recipes, try taking 2-3 photos from slightly
+                  different angles. This helps the AI better read all the text,
+                  especially ingredients that might be hard to see from one
+                  angle.
+                </p>
               </div>
             </div>
           ) : (
@@ -586,9 +700,27 @@ export default function CameraScanner({
                     </div>
                   )}
                   {aiCompleted && !aiProcessing && (
-                    <div className="mt-2 flex items-center justify-center gap-2 text-sm text-green-600 bg-green-50 p-2 rounded-lg">
-                      <Sparkles className="h-4 w-4" />
-                      AI has extracted your recipe!
+                    <div className="mt-2 space-y-2">
+                      <div className="flex items-center justify-center gap-2 text-sm text-green-600 bg-green-50 p-2 rounded-lg">
+                        <Sparkles className="h-4 w-4" />
+                        AI has extracted your recipe!
+                      </div>
+
+                      {/* Add feedback buttons */}
+                      <div className="flex gap-2 text-xs">
+                        <button
+                          onClick={() => {
+                            // Option to retry with different image processing
+                            if (capturedImages.length > 1) {
+                              alert(
+                                'Try taking another photo from a different angle, or ensure the text is well-lit and clearly visible.'
+                              );
+                            }
+                          }}
+                          className="px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
+                          Missing ingredients?
+                        </button>
+                      </div>
                     </div>
                   )}
                 </div>
