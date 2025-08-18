@@ -7,7 +7,7 @@ import CameraScanner from './CameraScanner';
 import RecipeList from './RecipeList';
 import RecipeForm from './RecipeForm';
 import ErrorBoundary from './ErrorBoundary';
-import { Camera, LogOut, Plus, Search, Share2 } from 'lucide-react';
+import { ChefHat, Camera, LogOut, Plus, Search, Share2 } from 'lucide-react';
 
 interface Recipe {
   id: string;
@@ -130,12 +130,8 @@ export default function RecipeBook() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-lg mr-3">
-                <img
-                  src="/logo.svg"
-                  alt="Mom's Yums Logo"
-                  className="h-8 w-8"
-                />
+              <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-lg mr-3">
+                <ChefHat className="h-6 w-6 text-white" />
               </div>
               <h1 className="text-xl font-bold text-gray-900">
                 Mom&apos;s Yums
@@ -189,12 +185,12 @@ export default function RecipeBook() {
 
         {/* Page Heading */}
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {user?.user_metadata?.full_name || user?.email?.split('@')[0]}
-            &apos;s
-            <br className="block sm:hidden" />
-            Recipe Collection
-          </h1>
+                     <h1 className="text-3xl font-bold text-gray-900 mb-2">
+             {user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+             &apos;s{' '}
+             <br className="block sm:hidden" />
+             Recipe Collection
+           </h1>
           <p className="text-lg text-gray-600">
             {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} in your
             collection
