@@ -537,14 +537,6 @@ export default function CameraScanner({
                         <p className="text-xs opacity-75 mt-1">
                           Only this area will be saved
                         </p>
-                        {/* Add helpful tips */}
-                        <div className="mt-3 text-xs opacity-90 text-left">
-                          <p>📱 Tips for better results:</p>
-                          <p>• Ensure good lighting</p>
-                          <p>• Keep phone steady</p>
-                          <p>• Avoid shadows on text</p>
-                          <p>• Make sure text is clearly visible</p>
-                        </div>
                       </div>
                     </div>
                   </>
@@ -582,9 +574,7 @@ export default function CameraScanner({
                 </h4>
                 <p className="text-xs text-blue-700">
                   For handwritten recipes, try taking 2-3 photos from slightly
-                  different angles. This helps the AI better read all the text,
-                  especially ingredients that might be hard to see from one
-                  angle.
+                  different angles.
                 </p>
               </div>
             </div>
