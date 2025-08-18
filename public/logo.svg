@@ -1,35 +1,38 @@
 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- White Background Circle for Contrast -->
+  <circle cx="32" cy="32" r="30" fill="white" stroke="#F97316" stroke-width="2"/>
+
   <!-- Oven Mitt Base -->
   <path d="M16 26C16 21.5817 19.5817 18 24 18H40C44.4183 18 48 21.5817 48 26V36C48 40.4183 44.4183 44 40 44H24C19.5817 44 16 40.4183 16 36V26Z" fill="#F97316"/>
-  
+
   <!-- Oven Mitt Cuff -->
   <path d="M14 34C14 32.8954 14.8954 32 16 32H48C49.1046 32 50 32.8954 50 34V40C50 41.1046 49.1046 42 48 42H16C14.8954 42 14 41.1046 14 40V34Z" fill="#EA580C"/>
-  
+
   <!-- Heart -->
   <path d="M32 12C35.5 12 38.5 14 40.5 16.5C42.5 19 43 22 43 25C43 32 40 36 37 38C34 40 32 42 32 42C32 42 30 40 27 38C24 36 21 32 21 25C21 22 21.5 19 23.5 16.5C25.5 14 28.5 12 32 12Z" fill="#EF4444"/>
-  
+
   <!-- Heart Highlight -->
   <path d="M29 18C29.8 17.2 31.2 16.5 32 16.5C32.8 16.5 34.2 17.2 35 18C35.8 18.8 36.2 20.2 36.2 21.5C36.2 24.5 35 27 33.5 29C32 31 30.5 33 30.5 33C30.5 33 29 31 27.5 29C26 27 24.8 24.5 24.8 21.5C24.8 20.2 25.2 18.8 26 18C26.8 17.2 28.2 16.5 29 16.5C29.8 16.5 28.2 17.2 29 18Z" fill="#FCA5A5"/>
-  
+
   <!-- Oven Mitt Fingers -->
   <path d="M22 24C22 23.4477 22.4477 23 23 23H41C41.5523 23 42 23.4477 42 24V30C42 30.5523 41.5523 31 41 31H23C22.4477 31 22 30.5523 22 30V24Z" fill="#F97316"/>
-  
+
   <!-- Oven Mitt Thumb -->
   <path d="M26 30C26 29.4477 26.4477 29 27 29H37C37.5523 29 38 29.4477 38 30V36C38 36.5523 37.5523 37 37 37H27C26.4477 37 26 36.5523 26 36V30Z" fill="#F97316"/>
-  
+
   <!-- Oven Mitt Stitching -->
   <path d="M32 34L32 40" stroke="#EA580C" stroke-width="2" stroke-linecap="round"/>
   <path d="M26 40L38 40" stroke="#EA580C" stroke-width="2" stroke-linecap="round"/>
-  
+
   <!-- Heart Sparkle -->
   <circle cx="37" cy="14" r="1.5" fill="#FEF3C7"/>
   <circle cx="27" cy="14" r="1.2" fill="#FEF3C7"/>
-  
+
   <!-- Additional Details for Punch -->
   <!-- Oven Mitt Texture Lines -->
-  <path d="M20 28L44 28" stroke="#EA580C" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
-  <path d="M20 32L44 32" stroke="#EA580C" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
-  
+  <path d="M20 28L44 28" stroke="#EA580C" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
+  <path d="M20 32L44 32" stroke="#EA580C" stroke-width="1" stroke-linecap="round" opacity="0.8"/>
+
   <!-- Heart Glow Effect -->
-  <circle cx="32" cy="27" r="18" fill="none" stroke="#FEF3C7" stroke-width="1" opacity="0.3"/>
+  <circle cx="32" cy="27" r="18" fill="none" stroke="#FEF3C7" stroke-width="1" opacity="0.5"/>
 </svg>
