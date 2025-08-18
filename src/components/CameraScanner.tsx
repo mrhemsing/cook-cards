@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabase';
 import { useAuth } from '@/contexts/AuthContext';
 import { X, Camera, RotateCcw, Save, Sparkles, Loader2 } from 'lucide-react';
 import Image from 'next/image';
+import CategorySelector, { Category } from './CategorySelector';
 
 interface CameraScannerProps {
   onClose: () => void;
@@ -31,11 +32,23 @@ export default function CameraScanner({
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [showAddPhoto, setShowAddPhoto] = useState(false);
   const [currentOCRService, setCurrentOCRService] = useState<string>('');
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [showCategorySelector, setShowCategorySelector] = useState(true);
 
   // Add OCR service configurations
   const OCR_SERVICES = {
     PRIMARY_AI: 'primary_ai'
   };
+
+  // Categories data
+  const categories: Category[] = [
+    { id: 1, name: 'baking', display_name: 'Baking', color: '#F59E0B' },
+    { id: 2, name: 'desserts', display_name: 'Desserts', color: '#EC4899' },
+    { id: 3, name: 'appetizers', display_name: 'Appetizers', color: '#10B981' },
+    { id: 4, name: 'salad', display_name: 'Salad', color: '#3B82F6' },
+    { id: 5, name: 'main', display_name: 'Main', color: '#EF4444' },
+    { id: 6, name: 'other', display_name: 'Other', color: '#6B7280' }
+  ];
 
   // Add service-specific image preprocessing
   const preprocessForService = (
@@ -542,6 +555,8 @@ export default function CameraScanner({
     setAiCompleted(false);
     setCameraError(null); // Reset camera error when retaking
     setShowAddPhoto(false);
+    setSelectedCategory(null);
+    setShowCategorySelector(true);
   };
 
   const toggleCamera = () => {
@@ -550,6 +565,11 @@ export default function CameraScanner({
 
   const addAnotherPhoto = () => {
     setShowAddPhoto(true);
+  };
+
+  const handleCategorySelect = (categoryId: number) => {
+    setSelectedCategory(categoryId);
+    setShowCategorySelector(false);
   };
 
   const removeImage = (index: number) => {
@@ -638,9 +658,12 @@ export default function CameraScanner({
       !title.trim() ||
       !ingredients.trim() ||
       !instructions.trim() ||
-      capturedImages.length === 0
+      capturedImages.length === 0 ||
+      !selectedCategory
     ) {
-      alert('Please fill in all fields and capture at least one image');
+      alert(
+        'Please fill in all fields, select a category, and capture at least one image'
+      );
       return;
     }
 
@@ -699,6 +722,7 @@ export default function CameraScanner({
         ingredients: ingredients.trim(),
         instructions: instructions.trim(),
         image_url: mainImageUrl,
+        category_id: selectedCategory,
         display_name:
           user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User'
       };
@@ -741,7 +765,16 @@ export default function CameraScanner({
         </div>
 
         <div className="p-6">
-          {capturedImages.length === 0 ? (
+          {showCategorySelector ? (
+            /* Category Selection Step */
+            <CategorySelector
+              selectedCategory={selectedCategory}
+              onCategorySelect={handleCategorySelect}
+              onBack={() => setShowCategorySelector(false)}
+              categories={categories}
+              required={true}
+            />
+          ) : capturedImages.length === 0 ? (
             /* Camera View */
             <div className="space-y-4">
               <div className="relative bg-gray-900 rounded-lg overflow-hidden">
@@ -1052,6 +1085,7 @@ export default function CameraScanner({
                 <div>Debug: title = &quot;{title}&quot;</div>
                 <div>Debug: ingredients = &quot;{ingredients}&quot;</div>
                 <div>Debug: instructions = &quot;{instructions}&quot;</div>
+                <div>Debug: selectedCategory = {selectedCategory}</div>
                 <div>Debug: aiProcessing = {aiProcessing ? 'Yes' : 'No'}</div>
                 <div>Debug: aiCompleted = {aiCompleted ? 'Yes' : 'No'}</div>
                 <div>Debug: showAddPhoto = {showAddPhoto ? 'Yes' : 'No'}</div>
@@ -1069,7 +1103,8 @@ export default function CameraScanner({
                     !title.trim() ||
                     !ingredients.trim() ||
                     !instructions.trim() ||
-                    capturedImages.length === 0
+                    capturedImages.length === 0 ||
+                    !selectedCategory
                   }
                   className="w-full bg-gradient-to-r from-green-500 to-blue-500 text-white py-4 px-6 rounded-lg font-medium shadow-xl border-2 border-green-600 disabled:opacity-50 disabled:cursor-not-allowed text-lg">
                   {loading ? (

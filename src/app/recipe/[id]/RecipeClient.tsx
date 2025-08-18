@@ -12,6 +12,13 @@ interface Recipe {
   image_url: string;
   created_at: string;
   user_id: string;
+  category_id?: number;
+  category?: {
+    id: number;
+    name: string;
+    display_name: string;
+    color: string;
+  };
 }
 
 interface RecipeClientProps {
@@ -59,6 +66,17 @@ export default function RecipeClient({ recipe }: RecipeClientProps) {
 
           {/* Recipe Details */}
           <div className="p-8">
+            {/* Category Badge */}
+            {recipe.category && (
+              <div className="mb-4">
+                <span
+                  className="inline-block px-3 py-1 text-sm font-medium rounded-full text-white"
+                  style={{ backgroundColor: recipe.category.color }}>
+                  {recipe.category.display_name}
+                </span>
+              </div>
+            )}
+
             <h1 className="text-3xl font-bold text-gray-900 mb-6">
               {recipe.title}
             </h1>

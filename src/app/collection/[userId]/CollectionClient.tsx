@@ -1,8 +1,10 @@
 'use client';
 
+import { useState, useMemo } from 'react';
 import { Camera, Plus, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
+import CategoryFilter from '@/components/CategoryFilter';
 
 interface Recipe {
   id: string;
@@ -11,6 +13,13 @@ interface Recipe {
   instructions: string;
   image_url: string;
   created_at: string;
+  category_id?: number;
+  category?: {
+    id: number;
+    name: string;
+    display_name: string;
+    color: string;
+  };
 }
 
 interface CollectionClientProps {
@@ -22,6 +31,24 @@ export default function CollectionClient({
   recipes,
   displayName
 }: CollectionClientProps) {
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+
+  // Categories data
+  const categories = [
+    { id: 1, name: 'baking', display_name: 'Baking', color: '#F59E0B' },
+    { id: 2, name: 'desserts', display_name: 'Desserts', color: '#EC4899' },
+    { id: 3, name: 'appetizers', display_name: 'Appetizers', color: '#10B981' },
+    { id: 4, name: 'salad', display_name: 'Salad', color: '#3B82F6' },
+    { id: 5, name: 'main', display_name: 'Main', color: '#EF4444' },
+    { id: 6, name: 'other', display_name: 'Other', color: '#6B7280' }
+  ];
+
+  // Filter recipes by category
+  const filteredRecipes = useMemo(() => {
+    if (!selectedCategory) return recipes;
+    return recipes.filter(recipe => recipe.category_id === selectedCategory);
+  }, [recipes, selectedCategory]);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
@@ -61,14 +88,24 @@ export default function CollectionClient({
           <div className="flex justify-center gap-4">
             <div className="flex items-center gap-2 text-gray-600">
               <Camera className="h-5 w-5" />
-              <span>{recipes.length} Recipes</span>
+              <span>{filteredRecipes.length} Recipes</span>
             </div>
           </div>
         </div>
 
+        {/* Category Filter */}
+        <div className="mb-8">
+          <CategoryFilter
+            categories={categories}
+            selectedCategory={selectedCategory}
+            onCategorySelect={setSelectedCategory}
+            className="max-w-2xl mx-auto"
+          />
+        </div>
+
         {/* Recipe Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
-          {recipes.map(recipe => (
+          {filteredRecipes.map(recipe => (
             <div
               key={recipe.id}
               className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow">
@@ -102,6 +139,17 @@ export default function CollectionClient({
 
               {/* Recipe Content */}
               <div className="p-4">
+                {/* Category Badge */}
+                {recipe.category && (
+                  <div className="mb-2">
+                    <span
+                      className="inline-block px-2 py-1 text-xs font-medium rounded-full text-white"
+                      style={{ backgroundColor: recipe.category.color }}>
+                      {recipe.category.display_name}
+                    </span>
+                  </div>
+                )}
+
                 <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
                   {recipe.title}
                 </h3>
