@@ -1,13 +1,13 @@
 import type { Metadata } from 'next';
-import { Inter, Cormorant_Garamond } from 'next/font/google';
+import { Inter, Calistoga } from 'next/font/google';
 import './globals.css';
 import { AuthProvider } from '@/contexts/AuthContext';
 
 const inter = Inter({ subsets: ['latin'] });
-const cormorantGaramond = Cormorant_Garamond({
+const calistoga = Calistoga({
   subsets: ['latin'],
-  weight: ['400', '500', '600', '700'],
-  variable: '--font-cormorant-garamond'
+  weight: ['400'],
+  variable: '--font-calistoga'
 });
 
 export const metadata: Metadata = {
@@ -28,7 +28,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} ${cormorantGaramond.variable}`}>
+      <body className={`${inter.className} ${calistoga.variable}`}>
         <AuthProvider>{children}</AuthProvider>
       </body>
     </html>

@@ -6,8 +6,8 @@
 }
 
 /* Custom font classes */
-.font-cormorant-garamond {
-  font-family: var(--font-cormorant-garamond), serif;
+.font-calistoga {
+  font-family: var(--font-calistoga), serif;
 }
 
 @theme inline {
