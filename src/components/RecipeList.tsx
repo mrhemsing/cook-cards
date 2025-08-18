@@ -12,6 +12,13 @@ interface Recipe {
   instructions: string;
   image_url: string;
   created_at: string;
+  category_id?: number;
+  category?: {
+    id: number;
+    name: string;
+    display_name: string;
+    color: string;
+  };
 }
 
 interface RecipeListProps {
@@ -188,6 +195,17 @@ export default function RecipeList({
 
             {/* Recipe Content */}
             <div className="p-4">
+              {/* Category Badge */}
+              {recipe.category && (
+                <div className="mb-2">
+                  <span
+                    className="inline-block px-2 py-1 text-xs font-medium rounded-full text-white"
+                    style={{ backgroundColor: recipe.category.color }}>
+                    {recipe.category.display_name}
+                  </span>
+                </div>
+              )}
+
               <h3 className="font-semibold text-gray-900 mb-2 line-clamp-2">
                 {recipe.title}
               </h3>
@@ -231,9 +249,24 @@ export default function RecipeList({
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
             <div className="p-6">
               <div className="flex justify-between items-start mb-4">
-                <h2 className="text-2xl font-bold text-gray-900">
-                  {selectedRecipe.title}
-                </h2>
+                <div>
+                  {/* Category Badge */}
+                  {selectedRecipe.category && (
+                    <div className="mb-2">
+                      <span
+                        className="inline-block px-3 py-1 text-sm font-medium rounded-full text-white"
+                        style={{
+                          backgroundColor: selectedRecipe.category.color
+                        }}>
+                        {selectedRecipe.category.display_name}
+                      </span>
+                    </div>
+                  )}
+
+                  <h2 className="text-2xl font-bold text-gray-900">
+                    {selectedRecipe.title}
+                  </h2>
+                </div>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={() => handleShareRecipe(selectedRecipe)}

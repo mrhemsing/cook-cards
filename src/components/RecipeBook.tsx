@@ -183,6 +183,18 @@ export default function RecipeBook() {
           </button>
         </div>
 
+        {/* Page Heading */}
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            {user?.user_metadata?.full_name || user?.email?.split('@')[0]}'s
+            Recipe Collection
+          </h1>
+          <p className="text-lg text-gray-600">
+            {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} in your
+            collection
+          </p>
+        </div>
+
         {/* Search and Category Filters */}
         <div className="mb-8 space-y-6">
           {/* Search */}
