@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <title>Mom's Yums - Oven Heart Logo (Vector)</title>
+  <defs>
+    <!-- Color palette approximated from reference -->
+    <style>
+      .rose { fill: #C76572; stroke: #C76572; }
+      .rose-stroke { stroke: #C76572; }
+      .rose-fill { fill: #C76572; }
+      .light { fill: #F6C9CF; }
+      .none { fill: none; }
+      .round { stroke-linecap: round; stroke-linejoin: round; }
+      .thick { stroke-width: 28; }
+      .thin { stroke-width: 24; }
+      .text { fill: #C76572; font-family: Georgia, "Times New Roman", Times, serif; font-weight: 700; letter-spacing: 2px; }
+    </style>
+  </defs>
+
+  <!-- Background (transparent) -->
+
+  <!-- Oven body -->
+  <g id="oven" transform="translate(0,-10)">
+    <!-- Outer rounded rectangle -->
+    <rect x="312" y="188" rx="40" ry="40" width="400" height="400" class="none rose-stroke round thick"/>
+    <!-- Top control bar separator -->
+    <line x1="324" y1="308" x2="700" y2="308" class="rose-stroke round thick"/>
+    <!-- Three knobs -->
+    <circle cx="392" cy="260" r="30" class="none rose-stroke round thick"/>
+    <circle cx="512" cy="260" r="30" class="none rose-stroke round thick"/>
+    <circle cx="632" cy="260" r="30" class="none rose-stroke round thick"/>
+    <!-- Inner oven window panel -->
+    <rect x="372" y="352" width="280" height="220" rx="36" ry="36" class="light rose-stroke round thick"/>
+    <!-- Inner inset border -->
+    <rect x="408" y="388" width="208" height="148" rx="28" ry="28" class="none rose-stroke round thin"/>
+    <!-- Heart -->
+    <path d="M512 516
+             C 500 498, 470 484, 448 500
+             C 430 514, 430 546, 452 568
+             C 474 590, 512 612, 512 612
+             C 512 612, 550 590, 572 568
+             C 594 546, 594 514, 576 500
+             C 554 484, 524 498, 512 516 Z"
+          class="none rose-stroke round thin" fill="none"/>
+  </g>
+
+  <!-- Text -->
+  <g id="wordmark" class="text">
+    <text x="512" y="760" font-size="130" text-anchor="middle">MOM’S</text>
+    <text x="512" y="870" font-size="130" text-anchor="middle">YUMS</text>
+  </g>
+</svg>

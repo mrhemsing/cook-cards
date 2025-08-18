@@ -130,9 +130,11 @@ export default function RecipeBook() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-lg mr-3">
-                <ChefHat className="h-6 w-6 text-white" />
-              </div>
+              <img
+                src="/moms_yums_logo.svg"
+                alt="Mom's Yums Logo"
+                className="h-8 w-8 mr-3"
+              />
               <h1 className="text-xl font-bold text-gray-900">
                 Mom&apos;s Yums
               </h1>

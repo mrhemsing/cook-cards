@@ -31,9 +31,11 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-full">
-              <ChefHat className="h-8 w-8 text-white" />
-            </div>
+            <img
+              src="/moms_yums_logo.svg"
+              alt="Mom's Yums Logo"
+              className="h-16 w-16"
+            />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             Mom&apos;s Yums
