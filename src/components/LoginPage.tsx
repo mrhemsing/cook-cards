@@ -40,7 +40,7 @@ export default function LoginPage() {
               className="h-16 w-16"
             />
           </div>
-          <h1 className="text-3xl font-bold text-[#C76572] mb-2">
+          <h1 className="text-3xl font-bold text-[#C76572] mb-2 font-cormorant-garamond">
             MOM&apos;S YUMS
           </h1>
           <p className="text-gray-600">Recipes Preserved for Generations</p>
