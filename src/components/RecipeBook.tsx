@@ -187,7 +187,9 @@ export default function RecipeBook() {
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {user?.user_metadata?.full_name || user?.email?.split('@')[0]}
-            &apos;s Recipe Collection
+            &apos;s
+            <br className="block sm:hidden" />
+            Recipe Collection
           </h1>
           <p className="text-lg text-gray-600">
             {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} in your
