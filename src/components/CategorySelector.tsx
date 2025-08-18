@@ -1,6 +1,5 @@
 'use client';
 
-import { useState } from 'react';
 import { Check } from 'lucide-react';
 
 export interface Category {
@@ -14,23 +13,17 @@ interface CategorySelectorProps {
   selectedCategory: number | null;
   onCategorySelect: (categoryId: number) => void;
   categories: Category[];
-  required?: boolean;
   className?: string;
 }
 
 export default function CategorySelector({
   selectedCategory,
   onCategorySelect,
-  onBack,
   categories,
-  required = false,
   className = ''
 }: CategorySelectorProps) {
-  const [showError, setShowError] = useState(false);
-
   const handleCategoryClick = (categoryId: number) => {
     onCategorySelect(categoryId);
-    setShowError(false);
   };
 
   return (
@@ -80,15 +73,6 @@ export default function CategorySelector({
           </button>
         ))}
       </div>
-
-      {/* Error Message */}
-      {showError && (
-        <div className="text-center p-3 bg-red-50 border border-red-200 rounded-lg">
-          <p className="text-sm text-red-600">
-            Please select a category to continue
-          </p>
-        </div>
-      )}
     </div>
   );
 }

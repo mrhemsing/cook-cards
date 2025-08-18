@@ -12,6 +12,7 @@ interface Recipe {
   image_url: string;
   created_at: string;
   user_id: string;
+  display_name?: string;
   category_id?: number;
   category?: {
     id: number;
@@ -77,9 +78,14 @@ export default function RecipeClient({ recipe }: RecipeClientProps) {
               </div>
             )}
 
-            <h1 className="text-3xl font-bold text-gray-900 mb-6">
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">
               {recipe.title}
             </h1>
+            {recipe.display_name && (
+              <p className="text-sm text-gray-500 mb-6">
+                (from {recipe.display_name}&apos;s recipes)
+              </p>
+            )}
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {/* Ingredients */}

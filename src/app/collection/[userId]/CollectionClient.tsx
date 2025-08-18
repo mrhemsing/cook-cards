@@ -4,7 +4,6 @@ import { useState, useMemo } from 'react';
 import { Camera, Plus, UserPlus } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
-import CategoryFilter from '@/components/CategoryFilter';
 
 interface Recipe {
   id: string;

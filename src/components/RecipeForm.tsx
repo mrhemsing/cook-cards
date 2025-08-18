@@ -130,7 +130,6 @@ export default function RecipeForm({
               selectedCategory={selectedCategory}
               onCategorySelect={handleCategorySelect}
               categories={categories}
-              required={true}
             />
           ) : (
             <>

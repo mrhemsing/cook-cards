@@ -210,20 +210,12 @@ export default function CameraScanner({
 
       // Try Primary AI first
       setCurrentOCRService('Primary AI');
-      const enhancedImage = await preprocessForService(
-        imageDataArray[0],
-        OCR_SERVICES.PRIMARY_AI
-      );
       let recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
 
       // If Primary AI failed or has missing fields, try with enhanced image preprocessing
       if (!recipeData) {
         console.log(
           'Primary AI failed, trying with enhanced image preprocessing...'
-        );
-        const enhancedImage = await preprocessForService(
-          imageDataArray[0],
-          OCR_SERVICES.PRIMARY_AI
         );
         recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
       } else {
@@ -250,10 +242,6 @@ export default function CameraScanner({
         ) {
           console.log(
             'Some fields missing, trying with enhanced image preprocessing...'
-          );
-          const enhancedImage = await preprocessForService(
-            imageDataArray[0],
-            OCR_SERVICES.PRIMARY_AI
           );
           const retryResult = await extractRecipeWithAI(
             imageDataArray,
@@ -545,7 +533,7 @@ export default function CameraScanner({
       console.error('Error in capture function:', error);
       alert('Error capturing image. Please try again.');
     }
-  }, [capturedImages]);
+  }, [capturedImages, extractRecipeWithMultipleServices]);
 
   const retake = () => {
     setCapturedImages([]);
@@ -771,7 +759,6 @@ export default function CameraScanner({
               selectedCategory={selectedCategory}
               onCategorySelect={handleCategorySelect}
               categories={categories}
-              required={true}
             />
           ) : capturedImages.length === 0 ? (
             /* Camera View */
