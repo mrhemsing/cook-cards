@@ -34,8 +34,8 @@ export default function CameraScanner({
 
   // Add OCR service configurations
   const OCR_SERVICES = {
-    PRIMARY: 'primary_ai',
-    GOOGLE_VISION: 'google_vision'
+    GOOGLE_VISION: 'google_vision',
+    PRIMARY_AI: 'primary_ai'
   };
 
   // Add service-specific image preprocessing
@@ -227,33 +227,81 @@ export default function CameraScanner({
         `Starting multi-service extraction... (attempt ${retryCount + 1})`
       );
 
-      // Try primary AI service first
-      setCurrentOCRService('Primary AI');
-      let recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
+      // Try Google Vision first (optimized for handwritten text)
+      setCurrentOCRService('Google Vision');
+      const enhancedImage = await preprocessForService(
+        imageDataArray[0],
+        OCR_SERVICES.GOOGLE_VISION
+      );
+      let recipeData = await extractWithGoogleVision(enhancedImage);
 
-      // Check if ingredients are missing
-      const hasIngredients =
-        recipeData?.ingredients &&
-        typeof recipeData.ingredients === 'string' &&
-        recipeData.ingredients.trim().length > 10;
+      // If Google Vision failed or has missing fields, try primary AI as backup
+      if (!recipeData) {
+        console.log('Google Vision failed, trying Primary AI...');
+        setCurrentOCRService('Primary AI');
+        recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
+      } else {
+        // Check if any fields are missing or too short
+        const hasTitle =
+          recipeData.title &&
+          typeof recipeData.title === 'string' &&
+          recipeData.title.trim().length > 3;
 
-      if (!hasIngredients && imageDataArray.length > 0) {
-        console.log('Ingredients missing, trying Google Vision...');
-        setCurrentOCRService('Google Vision');
+        const hasIngredients =
+          recipeData.ingredients &&
+          typeof recipeData.ingredients === 'string' &&
+          recipeData.ingredients.trim().length > 10;
 
-        // Try Google Vision with enhanced preprocessing
-        const enhancedImage = await preprocessForService(
-          imageDataArray[0],
-          OCR_SERVICES.GOOGLE_VISION
-        );
-        const googleResult = await extractWithGoogleVision(enhancedImage);
+        const hasInstructions =
+          recipeData.instructions &&
+          typeof recipeData.instructions === 'string' &&
+          recipeData.instructions.trim().length > 10;
 
+        // If any field is missing, try primary AI as backup
         if (
-          googleResult?.ingredients &&
-          googleResult.ingredients.trim().length > 10
+          (!hasTitle || !hasIngredients || !hasInstructions) &&
+          imageDataArray.length > 0
         ) {
-          console.log('Google Vision found ingredients!');
-          recipeData = { ...recipeData, ...googleResult };
+          console.log('Some fields missing, trying Primary AI as backup...');
+          setCurrentOCRService('Primary AI');
+
+          const aiResult = await extractRecipeWithAI(
+            imageDataArray,
+            retryCount
+          );
+
+          // Merge results, prioritizing AI for missing fields
+          if (aiResult) {
+            console.log('Primary AI backup results:', aiResult);
+
+            // Only use AI results for fields that are missing or too short
+            if (
+              !hasTitle &&
+              aiResult.title &&
+              aiResult.title.trim().length > 3
+            ) {
+              recipeData.title = aiResult.title;
+              console.log('Primary AI filled in missing title');
+            }
+
+            if (
+              !hasIngredients &&
+              aiResult.ingredients &&
+              aiResult.ingredients.trim().length > 10
+            ) {
+              recipeData.ingredients = aiResult.ingredients;
+              console.log('Primary AI filled in missing ingredients');
+            }
+
+            if (
+              !hasInstructions &&
+              aiResult.instructions &&
+              aiResult.instructions.trim().length > 10
+            ) {
+              recipeData.instructions = aiResult.instructions;
+              console.log('Primary AI filled in missing instructions');
+            }
+          }
         }
       }
 
@@ -278,7 +326,7 @@ export default function CameraScanner({
       }
 
       alert(
-        'All OCR services failed. Please fill in manually or try taking clearer photos.'
+        'Both Google Vision and Primary AI failed. Please fill in manually or try taking clearer photos.'
       );
       setAiCompleted(false);
     } finally {
