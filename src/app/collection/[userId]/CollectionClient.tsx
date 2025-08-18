@@ -96,7 +96,9 @@ export default function CollectionClient({
         {/* Category Filter */}
         <div className="mb-8">
           <div className="text-center mb-4 p-4 bg-red-100 border border-red-300 rounded-lg">
-            <h3 className="text-lg font-bold text-red-800 mb-2">🚨 DEBUG MODE ACTIVE 🚨</h3>
+            <h3 className="text-lg font-bold text-red-800 mb-2">
+              🚨 DEBUG MODE ACTIVE 🚨
+            </h3>
             <p className="text-sm text-red-700">
               Debug: Categories loaded: {categories.length}
             </p>
@@ -122,33 +124,33 @@ export default function CollectionClient({
                 }`}>
                 All
               </button>
-                             {categories.map(category => (
-                 <button
-                   key={category.id}
-                   onClick={() => setSelectedCategory(category.id)}
-                   className={`px-4 py-3 rounded-lg text-base font-bold transition-all duration-200 ${
-                     selectedCategory === category.id
-                       ? 'text-white shadow-lg scale-105'
-                       : 'hover:scale-105'
-                   }`}
-                   style={{
-                     backgroundColor:
-                       selectedCategory === category.id
-                         ? category.color
-                         : category.color + '20',
-                     color:
-                       selectedCategory === category.id
-                         ? 'white'
-                         : category.color,
-                     border:
-                       selectedCategory === category.id
-                         ? 'none'
-                         : `2px solid ${category.color}`,
-                     minWidth: '120px'
-                   }}>
-                   {category.display_name}
-                 </button>
-               ))}
+              {categories.map(category => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`px-4 py-3 rounded-lg text-base font-bold transition-all duration-200 ${
+                    selectedCategory === category.id
+                      ? 'text-white shadow-lg scale-105'
+                      : 'hover:scale-105'
+                  }`}
+                  style={{
+                    backgroundColor:
+                      selectedCategory === category.id
+                        ? category.color
+                        : category.color + '20',
+                    color:
+                      selectedCategory === category.id
+                        ? 'white'
+                        : category.color,
+                    border:
+                      selectedCategory === category.id
+                        ? 'none'
+                        : `2px solid ${category.color}`,
+                    minWidth: '120px'
+                  }}>
+                  {category.display_name}
+                </button>
+              ))}
             </div>
           </div>
         </div>

@@ -16,6 +16,13 @@ interface Recipe {
   instructions: string;
   image_url: string;
   created_at: string;
+  category_id?: number;
+  category?: {
+    id: number;
+    name: string;
+    display_name: string;
+    color: string;
+  };
 }
 
 export default function RecipeBook() {
@@ -24,13 +31,24 @@ export default function RecipeBook() {
   const [showScanner, setShowScanner] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
+
+  // Categories data
+  const categories = [
+    { id: 1, name: 'baking', display_name: 'Baking', color: '#F59E0B' },
+    { id: 2, name: 'desserts', display_name: 'Desserts', color: '#EC4899' },
+    { id: 3, name: 'appetizers', display_name: 'Appetizers', color: '#10B981' },
+    { id: 4, name: 'salad', display_name: 'Salad', color: '#3B82F6' },
+    { id: 5, name: 'main', display_name: 'Main', color: '#EF4444' },
+    { id: 6, name: 'other', display_name: 'Other', color: '#6B7280' }
+  ];
 
   const fetchRecipes = useCallback(async () => {
     try {
       const { data, error } = await supabase
         .from('recipes')
-        .select('*')
+        .select('*, category:categories(*)')
         .eq('user_id', user?.id)
         .order('created_at', { ascending: false });
 
@@ -88,11 +106,22 @@ export default function RecipeBook() {
     }
   };
 
-  const filteredRecipes = recipes.filter(
-    recipe =>
-      recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      recipe.ingredients.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const filteredRecipes = recipes.filter(recipe => {
+    // Category filter
+    if (selectedCategory && recipe.category_id !== selectedCategory) {
+      return false;
+    }
+
+    // Search filter
+    if (searchTerm) {
+      return (
+        recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        recipe.ingredients.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+    }
+
+    return true;
+  });
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -154,21 +183,78 @@ export default function RecipeBook() {
           </button>
         </div>
 
-        {/* Search */}
-        <div className="mb-8">
-          <div className="relative max-w-md">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search recipes..."
-              value={searchTerm}
-              onChange={e => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-            />
+        {/* Search and Category Filters */}
+        <div className="mb-8 space-y-6">
+          {/* Search */}
+          <div>
+            <div className="relative max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search recipes..."
+                value={searchTerm}
+                onChange={e => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+              />
+            </div>
+          </div>
+
+          {/* Category Filter */}
+          <div>
+            <h4 className="text-sm font-medium text-gray-700 mb-3">
+              Filter by Category
+            </h4>
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={() => setSelectedCategory(null)}
+                className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                  selectedCategory === null
+                    ? 'bg-gray-900 text-white shadow-md'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}>
+                All
+              </button>
+              {categories.map(category => (
+                <button
+                  key={category.id}
+                  onClick={() => setSelectedCategory(category.id)}
+                  className={`px-3 py-2 rounded-full text-sm font-medium transition-all duration-200 ${
+                    selectedCategory === category.id
+                      ? 'text-white shadow-md'
+                      : 'hover:opacity-80'
+                  }`}
+                  style={{
+                    backgroundColor:
+                      selectedCategory === category.id
+                        ? category.color
+                        : category.color + '20',
+                    color:
+                      selectedCategory === category.id
+                        ? 'white'
+                        : category.color,
+                    border:
+                      selectedCategory === category.id
+                        ? 'none'
+                        : `1px solid ${category.color}40`
+                  }}>
+                  {category.display_name}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
 
-        {/* Recipe List */}
+        {/* Recipe Count and List */}
+        <div className="mb-4 text-center">
+          <p className="text-sm text-gray-600">
+            Showing {filteredRecipes.length} of {recipes.length} recipes
+            {selectedCategory &&
+              ` in ${
+                categories.find(c => c.id === selectedCategory)?.display_name
+              }`}
+          </p>
+        </div>
+
         <RecipeList
           recipes={filteredRecipes}
           loading={loading}
