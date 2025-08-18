@@ -770,7 +770,6 @@ export default function CameraScanner({
             <CategorySelector
               selectedCategory={selectedCategory}
               onCategorySelect={handleCategorySelect}
-              onBack={() => setShowCategorySelector(false)}
               categories={categories}
               required={true}
             />

@@ -129,7 +129,6 @@ export default function RecipeForm({
             <CategorySelector
               selectedCategory={selectedCategory}
               onCategorySelect={handleCategorySelect}
-              onBack={() => setShowCategorySelector(false)}
               categories={categories}
               required={true}
             />
