@@ -2,7 +2,8 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { ChefHat, Camera, BookOpen } from 'lucide-react';
+import { Camera, BookOpen } from 'lucide-react';
+import Image from 'next/image';
 
 export default function LoginPage() {
   const [loading, setLoading] = useState(false);
@@ -31,9 +32,11 @@ export default function LoginPage() {
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <img
+            <Image
               src="/moms_yums_logo.svg"
               alt="Mom's Yums Logo"
+              width={64}
+              height={64}
               className="h-16 w-16"
             />
           </div>
@@ -54,7 +57,7 @@ export default function LoginPage() {
             Organize recipes digitally
           </div>
           <div className="flex items-center text-sm text-gray-600">
-            <ChefHat className="h-4 w-4 mr-3 text-orange-500" />
+            <BookOpen className="h-4 w-4 mr-3 text-orange-500" />
             Access anywhere, anytime
           </div>
         </div>
