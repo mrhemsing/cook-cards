@@ -32,12 +32,22 @@ export default function RecipeList({
   loading,
   onRecipeUpdated
 }: RecipeListProps) {
+  // Categories data
+  const categories = [
+    { id: 1, name: 'baking', display_name: 'Baking', color: '#F59E0B' },
+    { id: 2, name: 'desserts', display_name: 'Desserts', color: '#EC4899' },
+    { id: 3, name: 'appetizers', display_name: 'Appetizers', color: '#10B981' },
+    { id: 4, name: 'salad', display_name: 'Salad', color: '#3B82F6' },
+    { id: 5, name: 'main', display_name: 'Main', color: '#EF4444' },
+    { id: 6, name: 'other', display_name: 'Other', color: '#6B7280' }
+  ];
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [editingRecipe, setEditingRecipe] = useState<Recipe | null>(null);
   const [editForm, setEditForm] = useState({
     title: '',
     ingredients: '',
-    instructions: ''
+    instructions: '',
+    category_id: 0
   });
 
   const handleEdit = (recipe: Recipe) => {
@@ -45,7 +55,8 @@ export default function RecipeList({
     setEditForm({
       title: recipe.title,
       ingredients: recipe.ingredients,
-      instructions: recipe.instructions
+      instructions: recipe.instructions,
+      category_id: recipe.category_id || 6 // Default to "Other" if no category
     });
   };
 
@@ -59,6 +70,7 @@ export default function RecipeList({
           title: editForm.title.trim(),
           ingredients: editForm.ingredients.trim(),
           instructions: editForm.instructions.trim(),
+          category_id: editForm.category_id,
           updated_at: new Date().toISOString()
         })
         .eq('id', editingRecipe.id);
@@ -350,6 +362,42 @@ export default function RecipeList({
                     }
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    Category
+                  </label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {categories.map(category => (
+                      <button
+                        key={category.id}
+                        type="button"
+                        onClick={() =>
+                          setEditForm({ ...editForm, category_id: category.id })
+                        }
+                        className={`p-3 rounded-lg border-2 transition-all duration-200 text-sm font-medium ${
+                          editForm.category_id === category.id
+                            ? 'border-gray-900 bg-gray-50 shadow-lg'
+                            : 'border-gray-200 bg-white hover:border-gray-300 hover:shadow-md'
+                        }`}>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className="w-4 h-4 rounded-full"
+                            style={{ backgroundColor: category.color }}
+                          />
+                          <span
+                            className={
+                              editForm.category_id === category.id
+                                ? 'font-semibold'
+                                : ''
+                            }>
+                            {category.display_name}
+                          </span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
                 </div>
 
                 <div>
