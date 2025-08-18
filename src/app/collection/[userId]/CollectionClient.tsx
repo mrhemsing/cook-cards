@@ -56,11 +56,11 @@ export default function CollectionClient({
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
-                <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-lg mr-3">
+                <div className="bg-gradient-to-r from-orange-500 to-red-500 p-3 rounded-lg mr-3">
                   <img
                     src="/logo.svg"
                     alt="Mom's Yums Logo"
-                    className="h-6 w-6"
+                    className="h-8 w-8"
                   />
                 </div>
                 <h1 className="text-xl font-bold text-gray-900">

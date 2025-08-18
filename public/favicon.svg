@@ -1,27 +1,35 @@
-<svg width="32" height="32" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+<svg width="32" height="32" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
   <!-- Oven Mitt Base -->
-  <path d="M12 20C12 16.6863 14.6863 14 18 14H30C33.3137 14 36 16.6863 36 20V28C36 31.3137 33.3137 34 30 34H18C14.6863 34 12 31.3137 12 28V20Z" fill="#F97316"/>
+  <path d="M16 26C16 21.5817 19.5817 18 24 18H40C44.4183 18 48 21.5817 48 26V36C48 40.4183 44.4183 44 40 44H24C19.5817 44 16 40.4183 16 36V26Z" fill="#F97316"/>
 
   <!-- Oven Mitt Cuff -->
-  <path d="M10 26C10 24.8954 10.8954 24 12 24H36C37.1046 24 38 24.8954 38 26V30C38 31.1046 37.1046 32 36 32H12C10.8954 32 10 31.1046 10 30V26Z" fill="#EA580C"/>
+  <path d="M14 34C14 32.8954 14.8954 32 16 32H48C49.1046 32 50 32.8954 50 34V40C50 41.1046 49.1046 42 48 42H16C14.8954 42 14 41.1046 14 40V34Z" fill="#EA580C"/>
 
   <!-- Heart -->
-  <path d="M24 8C26.5 8 28.5 9.5 30 11C31.5 12.5 32 14 32 16C32 20 30 22 28 24C26 26 24 28 24 28C24 28 22 26 20 24C18 22 16 20 16 16C16 14 16.5 12.5 18 11C19.5 9.5 21.5 8 24 8Z" fill="#EF4444"/>
+  <path d="M32 12C35.5 12 38.5 14 40.5 16.5C42.5 19 43 22 43 25C43 32 40 36 37 38C34 40 32 42 32 42C32 42 30 40 27 38C24 36 21 32 21 25C21 22 21.5 19 23.5 16.5C25.5 14 28.5 12 32 12Z" fill="#EF4444"/>
 
   <!-- Heart Highlight -->
-  <path d="M22 12C22.5 11.5 23.5 11 24 11C24.5 11 25.5 11.5 26 12C26.5 12.5 26.8 13.5 26.8 14.5C26.8 16.5 26 18 25 19.5C24 21 23 22.5 23 22.5C23 22.5 22 21 21 19.5C20 18 19.2 16.5 19.2 14.5C19.2 13.5 19.5 12.5 20 12C20.5 11.5 21.5 11 22 11C22.5 11 21.5 11.5 22 12Z" fill="#FCA5A5"/>
+  <path d="M29 18C29.8 17.2 31.2 16.5 32 16.5C32.8 16.5 34.2 17.2 35 18C35.8 18.8 36.2 20.2 36.2 21.5C36.2 24.5 35 27 33.5 29C32 31 30.5 33 30.5 33C30.5 33 29 31 27.5 29C26 27 24.8 24.5 24.8 21.5C24.8 20.2 25.2 18.8 26 18C26.8 17.2 28.2 16.5 29 16.5C29.8 16.5 28.2 17.2 29 18Z" fill="#FCA5A5"/>
 
   <!-- Oven Mitt Fingers -->
-  <path d="M16 18C16 17.4477 16.4477 17 17 17H31C31.5523 17 32 17.4477 32 18V22C32 22.5523 31.5523 23 31 23H17C16.4477 23 16 22.5523 16 22V18Z" fill="#F97316"/>
+  <path d="M22 24C22 23.4477 22.4477 23 23 23H41C41.5523 23 42 23.4477 42 24V30C42 30.5523 41.5523 31 41 31H23C22.4477 31 22 30.5523 22 30V24Z" fill="#F97316"/>
 
   <!-- Oven Mitt Thumb -->
-  <path d="M20 22C20 21.4477 20.4477 21 21 21H25C25.5523 21 26 21.4477 26 22V26C26 26.5523 25.5523 27 25 27H21C20.4477 27 20 26.5523 20 26V22Z" fill="#F97316"/>
+  <path d="M26 30C26 29.4477 26.4477 29 27 29H37C37.5523 29 38 29.4477 38 30V36C38 36.5523 37.5523 37 37 37H27C26.4477 37 26 36.5523 26 36V30Z" fill="#F97316"/>
 
   <!-- Oven Mitt Stitching -->
-  <path d="M24 26L24 30" stroke="#EA580C" stroke-width="1" stroke-linecap="round"/>
-  <path d="M20 30L28 30" stroke="#EA580C" stroke-width="1" stroke-linecap="round"/>
+  <path d="M32 34L32 40" stroke="#EA580C" stroke-width="2" stroke-linecap="round"/>
+  <path d="M26 40L38 40" stroke="#EA580C" stroke-width="2" stroke-linecap="round"/>
 
   <!-- Heart Sparkle -->
-  <circle cx="28" cy="10" r="1" fill="#FEF3C7"/>
-  <circle cx="20" cy="10" r="0.8" fill="#FEF3C7"/>
+  <circle cx="37" cy="14" r="1.5" fill="#FEF3C7"/>
+  <circle cx="27" cy="14" r="1.2" fill="#FEF3C7"/>
+
+  <!-- Additional Details for Punch -->
+  <!-- Oven Mitt Texture Lines -->
+  <path d="M20 28L44 28" stroke="#EA580C" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+  <path d="M20 32L44 32" stroke="#EA580C" stroke-width="1" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Heart Glow Effect -->
+  <circle cx="32" cy="27" r="18" fill="none" stroke="#FEF3C7" stroke-width="1" opacity="0.3"/>
 </svg>
