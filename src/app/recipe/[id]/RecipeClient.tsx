@@ -36,7 +36,11 @@ export default function RecipeClient({ recipe }: RecipeClientProps) {
             <div className="flex items-center">
               <Link href="/" className="flex items-center">
                 <div className="bg-gradient-to-r from-orange-500 to-red-500 p-2 rounded-lg mr-3">
-                  <UserPlus className="h-6 w-6 text-white" />
+                  <img
+                    src="/logo.svg"
+                    alt="Mom's Yums Logo"
+                    className="h-6 w-6"
+                  />
                 </div>
                 <h1 className="text-xl font-bold text-gray-900">
                   Mom&apos;s Yums
