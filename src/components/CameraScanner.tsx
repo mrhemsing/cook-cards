@@ -30,8 +30,106 @@ export default function CameraScanner({
   );
   const [cameraError, setCameraError] = useState<string | null>(null);
   const [showAddPhoto, setShowAddPhoto] = useState(false);
+  const [currentOCRService, setCurrentOCRService] = useState<string>('');
 
-  // Add image enhancement before AI processing
+  // Add OCR service configurations
+  const OCR_SERVICES = {
+    PRIMARY: 'primary_ai',
+    GOOGLE_VISION: 'google_vision'
+  };
+
+  // Add service-specific image preprocessing
+  const preprocessForService = (
+    imageData: string,
+    service: string
+  ): Promise<string> => {
+    return new Promise(resolve => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      if (!ctx) {
+        console.error('Failed to get canvas context');
+        resolve(imageData); // Fallback to original image
+        return;
+      }
+
+      const img = new window.Image();
+
+      img.onload = () => {
+        // Different preprocessing for different services
+        switch (service) {
+          case OCR_SERVICES.GOOGLE_VISION:
+            // Google Vision works best with high contrast, slightly enhanced images
+            canvas.width = img.width * 1.5;
+            canvas.height = img.height * 1.5;
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            // Apply Google Vision optimized preprocessing
+            const imageData = ctx.getImageData(
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
+            const data = imageData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+              // Increase contrast and brightness for better OCR
+              const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
+              const enhanced = Math.min(
+                255,
+                Math.max(0, (gray - 128) * 1.3 + 128)
+              );
+
+              data[i] = enhanced; // R
+              data[i + 1] = enhanced; // G
+              data[i + 2] = enhanced; // B
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+            break;
+
+          default:
+            // Default preprocessing (existing enhanceImageForOCR logic)
+            canvas.width = img.width * 2;
+            canvas.height = img.height * 2;
+            ctx.imageSmoothingEnabled = true;
+            ctx.imageSmoothingQuality = 'high';
+            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
+            const defaultImageData = ctx.getImageData(
+              0,
+              0,
+              canvas.width,
+              canvas.height
+            );
+            const defaultData = defaultImageData.data;
+
+            for (let i = 0; i < defaultData.length; i += 4) {
+              const gray =
+                (defaultData[i] + defaultData[i + 1] + defaultData[i + 2]) / 3;
+              const enhanced = Math.min(
+                255,
+                Math.max(0, (gray - 128) * 1.2 + 128)
+              );
+
+              defaultData[i] = enhanced;
+              defaultData[i + 1] = enhanced;
+              defaultData[i + 2] = enhanced;
+            }
+
+            ctx.putImageData(defaultImageData, 0, 0);
+        }
+
+        resolve(canvas.toDataURL('image/jpeg', 0.95));
+      };
+
+      img.src = imageData;
+    });
+  };
+
+  // Add image enhancement before AI processing (fallback)
   const enhanceImageForOCR = (imageData: string): Promise<string> => {
     return new Promise(resolve => {
       const canvas = document.createElement('canvas');
@@ -81,16 +179,126 @@ export default function CameraScanner({
     });
   };
 
-  const extractRecipeWithAI = async (
+  // Add Google Cloud Vision API fallback
+  const extractWithGoogleVision = async (
+    imageData: string
+  ): Promise<{
+    title: string;
+    ingredients: string;
+    instructions: string;
+  } | null> => {
+    try {
+      // Note: You'll need to set up Google Cloud Vision API credentials
+      // This is a placeholder for the actual implementation
+      const response = await fetch('/api/google-vision', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image: imageData })
+      });
+
+      if (!response.ok) throw new Error('Google Vision API failed');
+
+      const result = await response.json();
+      return {
+        title: result.title || '',
+        ingredients: result.ingredients || '',
+        instructions: result.instructions || ''
+      };
+    } catch (error) {
+      console.error('Google Vision failed:', error);
+      return null;
+    }
+  };
+
+  // Enhanced extraction with multiple services
+  const extractRecipeWithMultipleServices = async (
     imageDataArray: string[],
-    retryCount = 0
-  ) => {
+    retryCount: number = 0
+  ): Promise<void> => {
     if (!imageDataArray || imageDataArray.length === 0) {
-      console.error('No image data provided to AI extraction');
+      console.error('No image data provided to multi-service extraction');
       return;
     }
 
     setAiProcessing(true);
+
+    try {
+      console.log(
+        `Starting multi-service extraction... (attempt ${retryCount + 1})`
+      );
+
+      // Try primary AI service first
+      setCurrentOCRService('Primary AI');
+      let recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
+
+      // Check if ingredients are missing
+      const hasIngredients =
+        recipeData?.ingredients &&
+        typeof recipeData.ingredients === 'string' &&
+        recipeData.ingredients.trim().length > 10;
+
+      if (!hasIngredients && imageDataArray.length > 0) {
+        console.log('Ingredients missing, trying Google Vision...');
+        setCurrentOCRService('Google Vision');
+
+        // Try Google Vision with enhanced preprocessing
+        const enhancedImage = await preprocessForService(
+          imageDataArray[0],
+          OCR_SERVICES.GOOGLE_VISION
+        );
+        const googleResult = await extractWithGoogleVision(enhancedImage);
+
+        if (
+          googleResult?.ingredients &&
+          googleResult.ingredients.trim().length > 10
+        ) {
+          console.log('Google Vision found ingredients!');
+          recipeData = { ...recipeData, ...googleResult };
+        }
+      }
+
+      // Update form with best results
+      if (recipeData) {
+        setTitle(recipeData.title || '');
+        setIngredients(recipeData.ingredients || '');
+        setInstructions(recipeData.instructions || '');
+        setAiCompleted(true);
+      }
+    } catch (error) {
+      console.error('Multi-service extraction failed:', error);
+
+      // Fallback to retry logic
+      if (imageDataArray.length > 1 && retryCount < 2) {
+        console.log('Trying with fewer images...');
+        const fewerImages = imageDataArray.slice(
+          0,
+          Math.ceil(imageDataArray.length / 2)
+        );
+        return extractRecipeWithMultipleServices(fewerImages, retryCount + 1);
+      }
+
+      alert(
+        'All OCR services failed. Please fill in manually or try taking clearer photos.'
+      );
+      setAiCompleted(false);
+    } finally {
+      setAiProcessing(false);
+    }
+  };
+
+  const extractRecipeWithAI = async (
+    imageDataArray: string[],
+    retryCount = 0
+  ): Promise<{
+    title: string;
+    ingredients: string;
+    instructions: string;
+  } | null> => {
+    if (!imageDataArray || imageDataArray.length === 0) {
+      console.error('No image data provided to AI extraction');
+      return null;
+    }
+
     try {
       console.log(`Starting AI extraction... (attempt ${retryCount + 1})`); // Debug log
 
@@ -168,26 +376,18 @@ export default function CameraScanner({
           return extractRecipeWithAI(singleImageArray, retryCount + 1);
         }
 
-        // Auto-fill the form fields with safe defaults and type checking
-        setTitle(typeof recipeData.title === 'string' ? recipeData.title : '');
-        setIngredients(
-          typeof recipeData.ingredients === 'string'
-            ? recipeData.ingredients
-            : ''
-        );
-        setInstructions(
-          typeof recipeData.instructions === 'string'
-            ? recipeData.instructions
-            : ''
-        );
-
-        setAiCompleted(true); // Mark AI as completed
-
-        console.log('Fields updated:', {
-          title: recipeData.title,
-          ingredients: recipeData.ingredients,
-          instructions: recipeData.instructions
-        }); // Debug log
+        // Return the recipe data for the multi-service function to handle
+        return {
+          title: typeof recipeData.title === 'string' ? recipeData.title : '',
+          ingredients:
+            typeof recipeData.ingredients === 'string'
+              ? recipeData.ingredients
+              : '',
+          instructions:
+            typeof recipeData.instructions === 'string'
+              ? recipeData.instructions
+              : ''
+        };
       } catch (fetchError) {
         clearTimeout(timeoutId);
         if (fetchError instanceof Error && fetchError.name === 'AbortError') {
@@ -215,8 +415,7 @@ export default function CameraScanner({
 
       // Reset AI states on error
       setAiCompleted(false);
-    } finally {
-      setAiProcessing(false);
+      return null;
     }
   };
 
@@ -259,13 +458,13 @@ export default function CameraScanner({
           const newImages = [...capturedImages, enhancedImage];
           setCapturedImages(newImages);
 
-          // Automatically extract recipe with AI using all images
+          // Automatically extract recipe with multi-service OCR using all images
           console.log(
-            'Image captured, cropped, and enhanced, calling AI with',
+            'Image captured, cropped, and enhanced, calling multi-service extraction with',
             newImages.length,
             'images...'
           ); // Debug log
-          extractRecipeWithAI(newImages);
+          extractRecipeWithMultipleServices(newImages);
         })
         .catch(error => {
           console.error('Error processing image:', error);
@@ -686,7 +885,9 @@ export default function CameraScanner({
                   {aiProcessing && (
                     <div className="mt-2 flex items-center justify-center gap-2 text-sm text-orange-600 bg-orange-50 p-2 rounded-lg">
                       <Loader2 className="h-4 w-4 animate-spin" />
-                      AI is reading your recipe cards...
+                      {currentOCRService
+                        ? `Processing with ${currentOCRService}...`
+                        : 'AI is reading your recipe cards...'}
                     </div>
                   )}
                   {aiCompleted && !aiProcessing && (
@@ -709,6 +910,20 @@ export default function CameraScanner({
                           }}
                           className="px-2 py-1 bg-blue-100 text-blue-700 rounded hover:bg-blue-200">
                           Missing ingredients?
+                        </button>
+                        <button
+                          onClick={() => {
+                            if (capturedImages.length > 0) {
+                              setAiCompleted(false);
+                              extractRecipeWithMultipleServices(
+                                capturedImages,
+                                0
+                              );
+                            }
+                          }}
+                          disabled={aiProcessing || capturedImages.length === 0}
+                          className="px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 disabled:opacity-50 transition-colors">
+                          🔄 Retry All Services
                         </button>
                       </div>
                     </div>
