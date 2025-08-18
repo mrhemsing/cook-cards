@@ -34,9 +34,7 @@ export default function CameraScanner({
 
   // Add OCR service configurations
   const OCR_SERVICES = {
-    GOOGLE_VISION: 'google_vision',
-    PRIMARY_AI: 'primary_ai',
-    AGGRESSIVE_ENHANCEMENT: 'aggressive_enhancement'
+    PRIMARY_AI: 'primary_ai'
   };
 
   // Add service-specific image preprocessing
@@ -58,15 +56,15 @@ export default function CameraScanner({
       img.onload = () => {
         // Different preprocessing for different services
         switch (service) {
-          case OCR_SERVICES.GOOGLE_VISION:
-            // Google Vision works best with high contrast, slightly enhanced images
+          case OCR_SERVICES.PRIMARY_AI:
+            // Primary AI works best with high contrast, slightly enhanced images
             canvas.width = img.width * 1.5;
             canvas.height = img.height * 1.5;
             ctx.imageSmoothingEnabled = true;
             ctx.imageSmoothingQuality = 'high';
             ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-            // Apply Google Vision optimized preprocessing
+            // Apply Primary AI optimized preprocessing
             const imageData = ctx.getImageData(
               0,
               0,
@@ -89,42 +87,6 @@ export default function CameraScanner({
             }
 
             ctx.putImageData(imageData, 0, 0);
-            break;
-
-          case OCR_SERVICES.AGGRESSIVE_ENHANCEMENT:
-            // Aggressive enhancement for difficult cases
-            canvas.width = img.width * 2;
-            canvas.height = img.height * 2;
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-            const aggressiveImageData = ctx.getImageData(
-              0,
-              0,
-              canvas.width,
-              canvas.height
-            );
-            const aggressiveData = aggressiveImageData.data;
-
-            for (let i = 0; i < aggressiveData.length; i += 4) {
-              // Much more aggressive contrast and brightness enhancement
-              const gray =
-                (aggressiveData[i] +
-                  aggressiveData[i + 1] +
-                  aggressiveData[i + 2]) /
-                3;
-              const enhanced = Math.min(
-                255,
-                Math.max(0, (gray - 128) * 1.8 + 128)
-              );
-
-              aggressiveData[i] = enhanced; // R
-              aggressiveData[i + 1] = enhanced; // G
-              aggressiveData[i + 2] = enhanced; // B
-            }
-
-            ctx.putImageData(aggressiveImageData, 0, 0);
             break;
 
           default:
@@ -216,37 +178,6 @@ export default function CameraScanner({
     });
   };
 
-  // Add Google Cloud Vision API fallback
-  const extractWithGoogleVision = async (
-    imageData: string
-  ): Promise<{
-    title: string;
-    ingredients: string;
-    instructions: string;
-  } | null> => {
-    try {
-      // Note: You'll need to set up Google Cloud Vision API credentials
-      // This is a placeholder for the actual implementation
-      const response = await fetch('/api/google-vision', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ image: imageData })
-      });
-
-      if (!response.ok) throw new Error('Google Vision API failed');
-
-      const result = await response.json();
-      return {
-        title: result.title || '',
-        ingredients: result.ingredients || '',
-        instructions: result.instructions || ''
-      };
-    } catch (error) {
-      console.error('Google Vision failed:', error);
-      return null;
-    }
-  };
-
   // Enhanced extraction with multiple services
   const extractRecipeWithMultipleServices = async (
     imageDataArray: string[],
@@ -264,18 +195,23 @@ export default function CameraScanner({
         `Starting multi-service extraction... (attempt ${retryCount + 1})`
       );
 
-      // Try Google Vision first (optimized for handwritten text)
-      setCurrentOCRService('Google Vision');
+      // Try Primary AI first
+      setCurrentOCRService('Primary AI');
       const enhancedImage = await preprocessForService(
         imageDataArray[0],
-        OCR_SERVICES.GOOGLE_VISION
+        OCR_SERVICES.PRIMARY_AI
       );
-      let recipeData = await extractWithGoogleVision(enhancedImage);
+      let recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
 
-      // If Google Vision failed or has missing fields, try primary AI as backup
+      // If Primary AI failed or has missing fields, try with enhanced image preprocessing
       if (!recipeData) {
-        console.log('Google Vision failed, trying Primary AI...');
-        setCurrentOCRService('Primary AI');
+        console.log(
+          'Primary AI failed, trying with enhanced image preprocessing...'
+        );
+        const enhancedImage = await preprocessForService(
+          imageDataArray[0],
+          OCR_SERVICES.PRIMARY_AI
+        );
         recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
       } else {
         // Check if any fields are missing or too short
@@ -294,96 +230,52 @@ export default function CameraScanner({
           typeof recipeData.instructions === 'string' &&
           recipeData.instructions.trim().length > 10;
 
-        // If any field is missing, try primary AI as backup
+        // If any field is missing, try with enhanced image preprocessing
         if (
           (!hasTitle || !hasIngredients || !hasInstructions) &&
           imageDataArray.length > 0
         ) {
-          console.log('Some fields missing, trying Primary AI as backup...');
-          setCurrentOCRService('Primary AI');
-
-          const aiResult = await extractRecipeWithAI(
+          console.log(
+            'Some fields missing, trying with enhanced image preprocessing...'
+          );
+          const enhancedImage = await preprocessForService(
+            imageDataArray[0],
+            OCR_SERVICES.PRIMARY_AI
+          );
+          const retryResult = await extractRecipeWithAI(
             imageDataArray,
             retryCount
           );
 
-          // Merge results, prioritizing AI for missing fields
-          if (aiResult) {
-            console.log('Primary AI backup results:', aiResult);
+          if (retryResult) {
+            console.log('Enhanced preprocessing retry results:', retryResult);
 
-            // Only use AI results for fields that are missing or too short
+            // Fill in any still-missing fields
             if (
               !hasTitle &&
-              aiResult.title &&
-              aiResult.title.trim().length > 3
+              retryResult.title &&
+              retryResult.title.trim().length > 3
             ) {
-              recipeData.title = aiResult.title;
+              recipeData.title = retryResult.title;
               console.log('Primary AI filled in missing title');
             }
 
             if (
               !hasIngredients &&
-              aiResult.ingredients &&
-              aiResult.ingredients.trim().length > 10
+              retryResult.ingredients &&
+              retryResult.ingredients.trim().length > 10
             ) {
-              recipeData.ingredients = aiResult.ingredients;
+              recipeData.ingredients = retryResult.ingredients;
               console.log('Primary AI filled in missing ingredients');
             }
 
             if (
               !hasInstructions &&
-              aiResult.instructions &&
-              aiResult.instructions.trim().length > 10
+              retryResult.instructions &&
+              retryResult.instructions.trim().length > 10
             ) {
-              recipeData.instructions = aiResult.instructions;
+              recipeData.instructions = retryResult.instructions;
               console.log('Primary AI filled in missing instructions');
-            }
-          }
-
-          // If still missing fields, try with different image preprocessing
-          const stillMissingFields =
-            !recipeData.title ||
-            recipeData.title.trim().length <= 3 ||
-            !recipeData.ingredients ||
-            recipeData.ingredients.trim().length <= 10 ||
-            !recipeData.instructions ||
-            recipeData.instructions.trim().length <= 10;
-
-          if (stillMissingFields && imageDataArray.length > 0) {
-            console.log(
-              'Still missing fields, trying with enhanced image preprocessing...'
-            );
-
-            // Try with aggressive image enhancement
-            const enhancedImage = await preprocessForService(
-              imageDataArray[0],
-              OCR_SERVICES.AGGRESSIVE_ENHANCEMENT
-            );
-
-            // Try Google Vision again with the enhanced image
-            const retryResult = await extractWithGoogleVision(enhancedImage);
-
-            if (retryResult) {
-              console.log('Enhanced preprocessing retry results:', retryResult);
-
-              // Fill in any still-missing fields
-              if (!recipeData.title || recipeData.title.trim().length <= 3) {
-                recipeData.title = retryResult.title || recipeData.title;
-              }
-              if (
-                !recipeData.ingredients ||
-                recipeData.ingredients.trim().length <= 10
-              ) {
-                recipeData.ingredients =
-                  retryResult.ingredients || recipeData.ingredients;
-              }
-              if (
-                !recipeData.instructions ||
-                recipeData.instructions.trim().length <= 10
-              ) {
-                recipeData.instructions =
-                  retryResult.instructions || recipeData.instructions;
-              }
             }
           }
         }
@@ -444,7 +336,7 @@ export default function CameraScanner({
       }
 
       alert(
-        'Both Google Vision and Primary AI failed. Please fill in manually or try taking clearer photos.'
+        'Both Primary AI failed. Please fill in manually or try taking clearer photos.'
       );
       setAiCompleted(false);
     } finally {

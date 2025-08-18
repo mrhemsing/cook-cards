@@ -1,55 +1,19 @@
 # OCR Services Setup Guide
 
-This guide will help you set up Google Cloud Vision API and Azure Computer Vision API to improve handwritten recipe recognition in your app.
+This guide explains the current OCR setup for your recipe app.
 
-## 🚀 Why Multiple OCR Services?
+## 🚀 Current OCR Strategy
 
-- **Primary AI Service**: Your existing AI service for initial extraction
-- **Google Cloud Vision**: Excellent for handwritten text recognition
-- **Smart Fallback**: Automatically tries Google Vision when ingredients are missing
+- **Primary AI Service**: Your existing AI service for recipe extraction
+- **Google Vision API**: Currently disabled
+- **Simple Fallback**: Retries with enhanced image preprocessing if fields are missing
 
-## 🔑 Google Cloud Vision API Setup
-
-### 1. Create Google Cloud Project
-
-1. Go to [Google Cloud Console](https://console.cloud.google.com/)
-2. Create a new project or select existing one
-3. Enable the Cloud Vision API
-
-### 2. Create API Key
-
-1. Go to **APIs & Services** > **Credentials**
-2. Click **Create Credentials** > **API Key**
-3. Copy the API key
-
-### 3. Add to Environment Variables
-
-Add this to your `.env.local` file:
-
-```bash
-GOOGLE_CLOUD_VISION_API_KEY=your_api_key_here
-```
-
-## 📱 How It Works
+## 📱 How It Works Now
 
 1. **User takes photo** of handwritten recipe
-2. **Primary AI service** attempts extraction first
-3. **If ingredients missing** → Automatically tries Google Vision
-4. **Best results combined** → Form filled with successful extractions
-
-## 💰 Pricing (Approximate)
-
-### Google Cloud Vision
-
-- **First 1,000 requests/month**: FREE
-- **Additional requests**: $1.50 per 1,000 requests
-
-## 🧪 Testing
-
-1. Take a photo of a handwritten recipe
-2. Check browser console for service switching logs
-3. Look for "Processing with [Service Name]..." messages
-4. Use "Retry All Services" button if needed
+2. **Primary AI service** attempts extraction
+3. **If fields missing** → Automatically retries with enhanced image preprocessing
+4. **Best results used** → Form filled with successful extractions
 
 ## 🔧 Troubleshooting
 
@@ -78,3 +42,12 @@ If you encounter issues:
 2. Verify your API keys are correct
 3. Ensure you have sufficient API quota
 4. Check network connectivity to external APIs
+
+## 🔄 Re-enabling Google Vision
+
+If you want to re-enable Google Vision API in the future:
+
+1. Set up Google Cloud Vision API credentials
+2. Add `GOOGLE_CLOUD_VISION_API_KEY` to environment variables
+3. Re-add the Google Vision API route
+4. Update the CameraScanner component to include Google Vision fallback
