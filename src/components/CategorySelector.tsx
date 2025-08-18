@@ -13,7 +13,6 @@ export interface Category {
 interface CategorySelectorProps {
   selectedCategory: number | null;
   onCategorySelect: (categoryId: number) => void;
-  onBack?: () => void;
   categories: Category[];
   required?: boolean;
   className?: string;
@@ -32,13 +31,6 @@ export default function CategorySelector({
   const handleCategoryClick = (categoryId: number) => {
     onCategorySelect(categoryId);
     setShowError(false);
-  };
-
-  const handleContinue = () => {
-    if (required && !selectedCategory) {
-      setShowError(true);
-      return;
-    }
   };
 
   return (
@@ -97,35 +89,6 @@ export default function CategorySelector({
           </p>
         </div>
       )}
-
-      {/* Action Buttons */}
-      <div className="text-center pt-2 space-y-3">
-        {/* Continue Button */}
-        {required && (
-          <button
-            onClick={handleContinue}
-            disabled={!selectedCategory}
-            className={`
-              px-8 py-3 rounded-lg font-medium transition-all duration-200
-              ${
-                selectedCategory
-                  ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white hover:from-orange-600 hover:to-red-600 shadow-lg hover:shadow-xl transform hover:scale-105'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
-              }
-            `}>
-            Continue
-          </button>
-        )}
-
-        {/* Back Button */}
-        {onBack && (
-          <button
-            onClick={onBack}
-            className="px-6 py-2 text-sm text-gray-600 hover:text-gray-800 transition-colors">
-            ← Back
-          </button>
-        )}
-      </div>
     </div>
   );
 }
