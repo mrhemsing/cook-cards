@@ -15,25 +15,6 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
   const [error, setError] = useState('');
   const [isChecking, setIsChecking] = useState(false);
 
-  const checkUsernameAvailability = async (username: string) => {
-    if (username.length < 3) return false;
-
-    setIsChecking(true);
-    try {
-      const { data, error } = await supabase
-        .from('profiles')
-        .select('username')
-        .eq('username', username.toLowerCase())
-        .single();
-
-      setIsChecking(false);
-      return !data; // Username is available if no data found
-    } catch {
-      setIsChecking(false);
-      return true; // Assume available if error (username not found)
-    }
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -104,7 +85,7 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
             />
           </div>
           <h1 className="text-2xl font-bold text-gray-900 mb-2">
-            Welcome to Mom's Yums!
+            Welcome to Mom&apos;s Yums!
           </h1>
           <p className="text-gray-600">
             Let's set up your profile. Choose a username to get started.
