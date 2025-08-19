@@ -62,9 +62,11 @@ export default function LoginPage() {
         if (error) throw error;
         // Success - user will be redirected by AuthContext
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error:', error);
-      setMessage(error.message || 'Authentication failed');
+      const errorMessage =
+        error instanceof Error ? error.message : 'Authentication failed';
+      setMessage(errorMessage);
     } finally {
       setEmailLoading(false);
     }
