@@ -13,7 +13,6 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
   const [username, setUsername] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [isChecking, setIsChecking] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,11 +117,7 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
               />
               {username.length >= 3 && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                  {isChecking ? (
-                    <div className="w-4 h-4 border-2 border-orange-200 border-t-orange-500 rounded-full animate-spin"></div>
-                  ) : (
-                    <Check className="h-4 w-4 text-green-500" />
-                  )}
+                  <Check className="h-4 w-4 text-green-500" />
                 </div>
               )}
             </div>
