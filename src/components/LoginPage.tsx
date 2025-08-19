@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
-import { Camera, BookOpen, Mail, Lock, Eye, EyeOff } from 'lucide-react';
+import { Camera, BookOpen, Mail, Lock, Eye, EyeOff, User } from 'lucide-react';
 import Image from 'next/image';
 
 export default function LoginPage() {
@@ -11,6 +11,7 @@ export default function LoginPage() {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [username, setUsername] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [message, setMessage] = useState('');
 
@@ -44,7 +45,11 @@ export default function LoginPage() {
           email,
           password,
           options: {
-            emailRedirectTo: `${window.location.origin}/auth/callback`
+            emailRedirectTo: `${window.location.origin}/auth/callback`,
+            data: {
+              username: username,
+              display_name: username
+            }
           }
         });
 
@@ -52,6 +57,7 @@ export default function LoginPage() {
         setMessage('Check your email for a confirmation link!');
         setEmail('');
         setPassword('');
+        setUsername('');
       } else {
         // Sign in
         const { error } = await supabase.auth.signInWithPassword({
@@ -130,6 +136,28 @@ export default function LoginPage() {
             </div>
           </div>
 
+          {isSignUp && (
+            <div>
+              <label
+                htmlFor="username"
+                className="block text-sm font-medium text-gray-700 mb-2">
+                Username
+              </label>
+              <div className="relative">
+                <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  id="username"
+                  type="text"
+                  value={username}
+                  onChange={e => setUsername(e.target.value)}
+                  required={isSignUp}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  placeholder="Choose a username"
+                />
+              </div>
+            </div>
+          )}
+
           <div>
             <label
               htmlFor="password"
@@ -191,6 +219,7 @@ export default function LoginPage() {
                 setMessage('');
                 setEmail('');
                 setPassword('');
+                setUsername('');
               }}
               className="text-sm text-orange-600 hover:text-orange-700 transition-colors">
               {isSignUp
