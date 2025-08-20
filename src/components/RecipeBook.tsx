@@ -7,6 +7,7 @@ import CameraScanner from './CameraScanner';
 import RecipeList from './RecipeList';
 import RecipeForm from './RecipeForm';
 import ErrorBoundary from './ErrorBoundary';
+import ProfilePhoto from './ProfilePhoto';
 import { Camera, LogOut, Plus, Search, Share2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -147,16 +148,21 @@ export default function RecipeBook() {
               </h1>
             </div>
 
-            <div className="flex flex-col items-end space-y-2">
-              <Link
-                href="/profile"
-                className="text-sm text-gray-600 text-right hover:text-[#C76572] transition-colors cursor-pointer">
-                Welcome,{' '}
-                {user?.user_metadata?.display_name ||
-                  user?.user_metadata?.username ||
-                  user?.user_metadata?.full_name ||
-                  user?.email?.split('@')[0]}
+            <div className="flex items-center space-x-4">
+              {/* Profile Photo */}
+              <Link href="/profile" className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                <ProfilePhoto 
+                  src={user?.user_metadata?.avatar_url} 
+                  size="md" 
+                />
+                <span className="text-sm text-gray-600 hover:text-[#C76572] transition-colors">
+                  {user?.user_metadata?.display_name ||
+                    user?.user_metadata?.username ||
+                    user?.user_metadata?.full_name ||
+                    user?.email?.split('@')[0]}
+                </span>
               </Link>
+              
               <button
                 onClick={signOut}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
@@ -198,21 +204,29 @@ export default function RecipeBook() {
           </button>
         </div>
 
-        {/* Page Heading */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {user?.user_metadata?.display_name ||
-              user?.user_metadata?.username ||
-              user?.user_metadata?.full_name ||
-              user?.email?.split('@')[0]}
-            &apos;s <br className="block sm:hidden" />
-            Recipe Collection
-          </h1>
-          <p className="text-lg text-gray-600">
-            {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} in your
-            collection
-          </p>
-        </div>
+                 {/* Page Heading */}
+         <div className="mb-8">
+           <div className="flex items-center space-x-4 mb-4">
+             <ProfilePhoto 
+               src={user?.user_metadata?.avatar_url} 
+               size="lg" 
+             />
+             <div>
+               <h1 className="text-3xl font-bold text-gray-900">
+                 {user?.user_metadata?.display_name ||
+                   user?.user_metadata?.username ||
+                   user?.user_metadata?.full_name ||
+                   user?.email?.split('@')[0]}
+                 &apos;s <br className="block sm:hidden" />
+                 Recipe Collection
+               </h1>
+               <p className="text-lg text-gray-600">
+                 {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} in your
+                 collection
+               </p>
+             </div>
+           </div>
+         </div>
 
         {/* Search and Category Filters */}
         <div className="mb-8 space-y-6">

@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, User, Mail, Edit2, Check, X } from 'lucide-react';
+import { ArrowLeft, User, Mail, Edit2, Check, X, Camera, Trash2 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
+import ProfilePhoto from './ProfilePhoto';
 
 export default function ProfilePage() {
   const { user, signOut } = useAuth();
@@ -14,12 +15,15 @@ export default function ProfilePage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   useEffect(() => {
     if (user) {
       setUsername(
         user.user_metadata?.display_name || user.user_metadata?.username || ''
       );
+      setProfilePhoto(user.user_metadata?.avatar_url || null);
     }
   }, [user]);
 
@@ -62,12 +66,14 @@ export default function ProfilePage() {
       // Try to update the profiles table if it exists
       if (user?.id) {
         try {
-          const { error: profileError } = await supabase.from('profiles').upsert({
-            id: user.id,
-            username: username.toLowerCase().replace(/\s+/g, '_'),
-            display_name: username,
-            updated_at: new Date().toISOString()
-          });
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert({
+              id: user.id,
+              username: username.toLowerCase().replace(/\s+/g, '_'),
+              display_name: username,
+              updated_at: new Date().toISOString()
+            });
 
           if (profileError) {
             console.warn(
@@ -107,6 +113,83 @@ export default function ProfilePage() {
     setSuccess('');
   };
 
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file || !user?.id) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      setError('Please select an image file');
+      return;
+    }
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image must be smaller than 5MB');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    setError('');
+
+    try {
+      // Upload to Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}-${Date.now()}.${fileExt}`;
+      const { data, error } = await supabase.storage
+        .from('profile-photos')
+        .upload(fileName, file);
+
+      if (error) throw error;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(fileName);
+
+      // Update user metadata
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { avatar_url: publicUrl }
+      });
+
+      if (updateError) throw updateError;
+
+      setProfilePhoto(publicUrl);
+      setSuccess('Profile photo updated successfully!');
+    } catch (error: unknown) {
+      console.error('Error uploading photo:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to upload photo';
+      setError(errorMessage);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
+  const handleRemovePhoto = async () => {
+    if (!user?.id || !profilePhoto) return;
+
+    setUploadingPhoto(true);
+    setError('');
+
+    try {
+      // Update user metadata to remove avatar_url
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: { avatar_url: null }
+      });
+
+      if (updateError) throw updateError;
+
+      setProfilePhoto(null);
+      setSuccess('Profile photo removed successfully!');
+    } catch (error: unknown) {
+      console.error('Error removing photo:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to remove photo';
+      setError(errorMessage);
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
+
   if (!user) {
     return null;
   }
@@ -139,18 +222,51 @@ export default function ProfilePage() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-          {/* Profile Header */}
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-8 text-white">
-            <div className="flex items-center space-x-4">
-              <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
-                <User className="h-10 w-10" />
-              </div>
-              <div>
-                <h1 className="text-3xl font-bold">{username || 'User'}</h1>
-                <p className="text-orange-100">Profile Settings</p>
-              </div>
-            </div>
-          </div>
+                     {/* Profile Header */}
+           <div className="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-8 text-white">
+             <div className="flex items-center space-x-4">
+               <div className="relative">
+                 <ProfilePhoto 
+                   src={profilePhoto} 
+                   size="xl" 
+                   className="bg-white bg-opacity-20"
+                 />
+                 
+                 {/* Photo upload controls */}
+                 <div className="absolute -bottom-2 -right-2 flex space-x-1">
+                   <label className="cursor-pointer bg-green-500 hover:bg-green-600 p-1 rounded-full transition-colors">
+                     <Camera className="h-3 w-3 text-white" />
+                     <input
+                       type="file"
+                       accept="image/*"
+                       onChange={handlePhotoUpload}
+                       className="hidden"
+                       disabled={uploadingPhoto}
+                     />
+                   </label>
+                   {profilePhoto && (
+                     <button
+                       onClick={handleRemovePhoto}
+                       disabled={uploadingPhoto}
+                       className="bg-red-500 hover:bg-red-600 p-1 rounded-full transition-colors disabled:opacity-50"
+                     >
+                       <Trash2 className="h-3 w-3 text-white" />
+                     </button>
+                   )}
+                 </div>
+                 
+                 {uploadingPhoto && (
+                   <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                   </div>
+                 )}
+               </div>
+               <div>
+                 <h1 className="text-3xl font-bold">{username || 'User'}</h1>
+                 <p className="text-orange-100">Profile Settings</p>
+               </div>
+             </div>
+           </div>
 
           {/* Profile Content */}
           <div className="p-6 space-y-6">
