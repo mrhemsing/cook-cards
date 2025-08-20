@@ -1,6 +1,6 @@
 'use client';
 
-import { User } from 'lucide-react';
+import { User, Camera } from 'lucide-react';
 import Image from 'next/image';
 
 interface ProfilePhotoProps {
@@ -8,6 +8,7 @@ interface ProfilePhotoProps {
   alt?: string;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
+  displayName?: string;
 }
 
 export default function ProfilePhoto({
@@ -32,7 +33,7 @@ export default function ProfilePhoto({
 
   return (
     <div
-      className={`${sizeClasses[size]} rounded-full overflow-hidden bg-gray-200 flex items-center justify-center ${className}`}>
+      className={`${sizeClasses[size]} rounded-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-300 flex items-center justify-center ${className}`}>
       {src ? (
         <Image
           src={src}
@@ -42,7 +43,10 @@ export default function ProfilePhoto({
           className="w-full h-full object-cover"
         />
       ) : (
-        <User className={`${iconSizes[size]} text-gray-400`} />
+        <div className="flex flex-col items-center justify-center text-gray-500">
+          <Camera className={`${iconSizes[size]} mb-1`} />
+          <div className="text-xs font-medium">Add Photo</div>
+        </div>
       )}
     </div>
   );
