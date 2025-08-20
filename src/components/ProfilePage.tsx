@@ -44,7 +44,9 @@ export default function ProfilePage() {
           setProfilePhoto(profile.avatar_url || null);
         } else {
           // Fallback to user metadata
-          const { data: { user: refreshedUser } } = await supabase.auth.getUser();
+          const {
+            data: { user: refreshedUser }
+          } = await supabase.auth.getUser();
           if (refreshedUser) {
             setUsername(
               refreshedUser.user_metadata?.display_name ||
@@ -57,7 +59,9 @@ export default function ProfilePage() {
       } catch (error) {
         console.warn('Error refreshing profile data:', error);
         // Fallback to user metadata
-        const { data: { user: refreshedUser } } = await supabase.auth.getUser();
+        const {
+          data: { user: refreshedUser }
+        } = await supabase.auth.getUser();
         if (refreshedUser) {
           setUsername(
             refreshedUser.user_metadata?.display_name ||
@@ -335,7 +339,7 @@ export default function ProfilePage() {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
           {/* Profile Header */}
-          <div className="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-8 text-white">
+          <div className="bg-gradient-to-r from-[#C76572] to-[#B04A5A] px-6 py-8 text-white">
             <div className="flex items-center space-x-4">
               <div className="relative">
                 <ProfilePhoto
@@ -458,7 +462,7 @@ export default function ProfilePage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/"
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium rounded-lg hover:from-orange-600 hover:to-red-600 transition-all text-center">
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-[#C76572] to-[#B04A5A] text-white font-medium rounded-lg hover:from-[#B04A5A] hover:to-[#9A3D4A] transition-all text-center">
                   Back to Recipe Collection
                 </Link>
                 <button

@@ -27,14 +27,17 @@ export default function Home() {
               const timeoutPromise = new Promise<never>((_, reject) =>
                 setTimeout(() => reject(new Error('Timeout')), 5000)
               );
-              
+
               const profilePromise = supabase
                 .from('profiles')
                 .select('display_name')
                 .eq('id', user.id)
                 .single();
 
-              const result = await Promise.race([profilePromise, timeoutPromise]);
+              const result = await Promise.race([
+                profilePromise,
+                timeoutPromise
+              ]);
               const { data: profile } = result;
 
               if (!profile?.display_name) {
