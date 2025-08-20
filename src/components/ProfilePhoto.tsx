@@ -18,7 +18,7 @@ export default function ProfilePhoto({
   className = ''
 }: ProfilePhotoProps) {
   const [imageError, setImageError] = useState(false);
-  
+
   const sizeClasses = {
     sm: 'w-8 h-8',
     md: 'w-10 h-10',
