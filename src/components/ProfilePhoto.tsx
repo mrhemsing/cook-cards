@@ -43,14 +43,14 @@ export default function ProfilePhoto({
         />
       ) : (
         <div className="flex flex-col items-center justify-center text-gray-500">
-          <div className={`${iconSizes[size]} mb-1 flex items-center justify-center`}>
-            <svg 
-              viewBox="0 0 24 24" 
-              fill="currentColor" 
-              className="w-full h-full"
-            >
-              <circle cx="12" cy="8" r="4"/>
-              <path d="M20 21v-2c0-2.21-1.79-4-4-4H8c-2.21 0-4 1.79-4 4v2"/>
+          <div
+            className={`${iconSizes[size]} mb-1 flex items-center justify-center`}>
+            <svg
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              className="w-full h-full">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M20 21v-2c0-2.21-1.79-4-4-4H8c-2.21 0-4 1.79-4 4v2" />
             </svg>
           </div>
           <div className="text-xs font-medium">Add Photo</div>
