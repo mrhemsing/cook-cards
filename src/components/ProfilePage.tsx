@@ -27,6 +27,23 @@ export default function ProfilePage() {
   const [profilePhoto, setProfilePhoto] = useState<string | null>(null);
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
+  // Function to refresh user data and update local state
+  const refreshUserData = async () => {
+    if (user?.id) {
+      const {
+        data: { user: refreshedUser }
+      } = await supabase.auth.getUser();
+      if (refreshedUser) {
+        setUsername(
+          refreshedUser.user_metadata?.display_name ||
+            refreshedUser.user_metadata?.username ||
+            ''
+        );
+        setProfilePhoto(refreshedUser.user_metadata?.avatar_url || null);
+      }
+    }
+  };
+
   useEffect(() => {
     if (user) {
       setUsername(
@@ -35,6 +52,16 @@ export default function ProfilePage() {
       setProfilePhoto(user.user_metadata?.avatar_url || null);
     }
   }, [user]);
+
+  // Refresh user data when component mounts and periodically
+  useEffect(() => {
+    refreshUserData();
+
+    // Set up periodic refresh every 30 seconds to catch metadata updates
+    const interval = setInterval(refreshUserData, 30000);
+
+    return () => clearInterval(interval);
+  }, [user?.id]);
 
   const handleUpdateDisplayName = async () => {
     if (!username.trim()) {
@@ -165,7 +192,19 @@ export default function ProfilePage() {
 
       if (updateError) throw updateError;
 
-      setProfilePhoto(publicUrl);
+      // Refresh the user data to get the updated metadata
+      const {
+        data: { user: refreshedUser }
+      } = await supabase.auth.getUser();
+
+      if (refreshedUser) {
+        // Update local state with the new avatar_url
+        setProfilePhoto(refreshedUser.user_metadata?.avatar_url || publicUrl);
+      } else {
+        // Fallback to the publicUrl if refresh fails
+        setProfilePhoto(publicUrl);
+      }
+
       setSuccess('Profile photo updated successfully!');
     } catch (error: unknown) {
       console.error('Error uploading photo:', error);
@@ -191,7 +230,19 @@ export default function ProfilePage() {
 
       if (updateError) throw updateError;
 
-      setProfilePhoto(null);
+      // Refresh the user data to get the updated metadata
+      const {
+        data: { user: refreshedUser }
+      } = await supabase.auth.getUser();
+
+      if (refreshedUser) {
+        // Update local state with the new avatar_url (should be null)
+        setProfilePhoto(refreshedUser.user_metadata?.avatar_url || null);
+      } else {
+        // Fallback to null if refresh fails
+        setProfilePhoto(null);
+      }
+
       setSuccess('Profile photo removed successfully!');
     } catch (error: unknown) {
       console.error('Error removing photo:', error);
