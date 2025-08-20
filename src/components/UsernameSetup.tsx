@@ -49,20 +49,29 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
 
       if (updateError) throw updateError;
 
-      // Try to update the profiles table if it exists
+      // Also create a profile record for persistence
       try {
-        const { error: profileError } = await supabase.from('profiles').upsert({
-          id: (await supabase.auth.getUser()).data.user?.id,
-          username: username.toLowerCase().replace(/\s+/g, '_'),
-          display_name: username,
-          updated_at: new Date().toISOString()
-        });
+        const {
+          data: { user: currentUser }
+        } = await supabase.auth.getUser();
+        if (currentUser?.id) {
+          const { error: profileError } = await supabase
+            .from('profiles')
+            .upsert(
+              {
+                id: currentUser.id,
+                username: username.toLowerCase().replace(/\s+/g, '_'),
+                display_name: username,
+                updated_at: new Date().toISOString()
+              },
+              {
+                onConflict: 'id'
+              }
+            );
 
-        if (profileError) {
-          console.warn(
-            'Profiles table update failed, but user metadata was updated:',
-            profileError
-          );
+          if (profileError) {
+            console.warn('Profiles table update failed:', profileError);
+          }
         }
       } catch (profileError) {
         console.warn(

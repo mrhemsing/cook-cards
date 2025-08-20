@@ -44,7 +44,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      setUser(session?.user ?? null);
+      if (event === 'SIGNED_IN' && session?.user) {
+        // Refresh user data to get latest metadata
+        const {
+          data: { user: refreshedUser }
+        } = await supabase.auth.getUser();
+        setUser(refreshedUser);
+      } else {
+        setUser(session?.user ?? null);
+      }
       setLoading(false);
     });
 

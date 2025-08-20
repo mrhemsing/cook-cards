@@ -30,16 +30,46 @@ export default function ProfilePage() {
   // Function to refresh user data and update local state
   const refreshUserData = async () => {
     if (user?.id) {
-      const {
-        data: { user: refreshedUser }
-      } = await supabase.auth.getUser();
-      if (refreshedUser) {
-        setUsername(
-          refreshedUser.user_metadata?.display_name ||
-            refreshedUser.user_metadata?.username ||
-            ''
-        );
-        setProfilePhoto(refreshedUser.user_metadata?.avatar_url || null);
+      try {
+        // First try to get data from profiles table
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('username, display_name, avatar_url')
+          .eq('id', user.id)
+          .single();
+
+        if (profile && !profileError) {
+          // Use profiles table data as primary source
+          setUsername(profile.display_name || profile.username || '');
+          setProfilePhoto(profile.avatar_url || null);
+        } else {
+          // Fallback to user metadata
+          const {
+            data: { user: refreshedUser }
+          } = await supabase.auth.getUser();
+          if (refreshedUser) {
+            setUsername(
+              refreshedUser.user_metadata?.display_name ||
+                refreshedUser.user_metadata?.username ||
+                ''
+            );
+            setProfilePhoto(refreshedUser.user_metadata?.avatar_url || null);
+          }
+        }
+      } catch (error) {
+        console.warn('Error refreshing profile data:', error);
+        // Fallback to user metadata
+        const {
+          data: { user: refreshedUser }
+        } = await supabase.auth.getUser();
+        if (refreshedUser) {
+          setUsername(
+            refreshedUser.user_metadata?.display_name ||
+              refreshedUser.user_metadata?.username ||
+              ''
+          );
+          setProfilePhoto(refreshedUser.user_metadata?.avatar_url || null);
+        }
       }
     }
   };
@@ -99,30 +129,31 @@ export default function ProfilePage() {
 
       if (updateError) throw updateError;
 
-      // Try to update the profiles table if it exists
+      // Also update the profiles table for persistence
       if (user?.id) {
         try {
           const { error: profileError } = await supabase
             .from('profiles')
-            .upsert({
-              id: user.id,
-              username: username.toLowerCase().replace(/\s+/g, '_'),
-              display_name: username,
-              updated_at: new Date().toISOString()
-            });
+            .upsert(
+              {
+                id: user.id,
+                username: username.toLowerCase().replace(/\s+/g, '_'),
+                display_name: username,
+                updated_at: new Date().toISOString()
+              },
+              {
+                onConflict: 'id'
+              }
+            );
 
           if (profileError) {
-            console.warn(
-              'Profiles table update failed, but user metadata was updated:',
-              profileError
-            );
+            console.warn('Profiles table update failed:', profileError);
           }
         } catch (profileError) {
           console.warn(
             'Profiles table does not exist or is not accessible:',
             profileError
           );
-          // This is okay - the user metadata was already updated
         }
       }
 
@@ -192,19 +223,31 @@ export default function ProfilePage() {
 
       if (updateError) throw updateError;
 
-      // Refresh the user data to get the updated metadata
-      const {
-        data: { user: refreshedUser }
-      } = await supabase.auth.getUser();
+      // Also update the profiles table for persistence
+      try {
+        const { error: profileError } = await supabase.from('profiles').upsert(
+          {
+            id: user.id,
+            avatar_url: publicUrl,
+            updated_at: new Date().toISOString()
+          },
+          {
+            onConflict: 'id'
+          }
+        );
 
-      if (refreshedUser) {
-        // Update local state with the new avatar_url
-        setProfilePhoto(refreshedUser.user_metadata?.avatar_url || publicUrl);
-      } else {
-        // Fallback to the publicUrl if refresh fails
-        setProfilePhoto(publicUrl);
+        if (profileError) {
+          console.warn('Profiles table update failed:', profileError);
+        }
+      } catch (profileError) {
+        console.warn(
+          'Profiles table does not exist or is not accessible:',
+          profileError
+        );
       }
 
+      // Update local state immediately
+      setProfilePhoto(publicUrl);
       setSuccess('Profile photo updated successfully!');
     } catch (error: unknown) {
       console.error('Error uploading photo:', error);
@@ -230,19 +273,28 @@ export default function ProfilePage() {
 
       if (updateError) throw updateError;
 
-      // Refresh the user data to get the updated metadata
-      const {
-        data: { user: refreshedUser }
-      } = await supabase.auth.getUser();
+      // Also remove from profiles table
+      try {
+        const { error: profileError } = await supabase
+          .from('profiles')
+          .update({
+            avatar_url: null,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
 
-      if (refreshedUser) {
-        // Update local state with the new avatar_url (should be null)
-        setProfilePhoto(refreshedUser.user_metadata?.avatar_url || null);
-      } else {
-        // Fallback to null if refresh fails
-        setProfilePhoto(null);
+        if (profileError) {
+          console.warn('Profiles table update failed:', profileError);
+        }
+      } catch (profileError) {
+        console.warn(
+          'Profiles table does not exist or is not accessible:',
+          profileError
+        );
       }
 
+      // Update local state immediately
+      setProfilePhoto(null);
       setSuccess('Profile photo removed successfully!');
     } catch (error: unknown) {
       console.error('Error removing photo:', error);
