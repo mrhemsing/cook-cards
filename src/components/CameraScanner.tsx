@@ -35,11 +35,6 @@ export default function CameraScanner({
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [showCategorySelector, setShowCategorySelector] = useState(true);
 
-  // Add OCR service configurations
-  const OCR_SERVICES = {
-    PRIMARY_AI: 'primary_ai'
-  };
-
   // Categories data
   const categories: Category[] = [
     { id: 1, name: 'baking', display_name: 'Baking', color: '#F59E0B' },
@@ -49,97 +44,6 @@ export default function CameraScanner({
     { id: 5, name: 'main', display_name: 'Main', color: '#EF4444' },
     { id: 6, name: 'other', display_name: 'Other', color: '#6B7280' }
   ];
-
-  // Add service-specific image preprocessing
-  const preprocessForService = (
-    imageData: string,
-    service: string
-  ): Promise<string> => {
-    return new Promise(resolve => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      if (!ctx) {
-        console.error('Failed to get canvas context');
-        resolve(imageData); // Fallback to original image
-        return;
-      }
-
-      const img = new window.Image();
-
-      img.onload = () => {
-        // Different preprocessing for different services
-        switch (service) {
-          case OCR_SERVICES.PRIMARY_AI:
-            // Primary AI works best with high contrast, slightly enhanced images
-            canvas.width = img.width * 1.5;
-            canvas.height = img.height * 1.5;
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-            // Apply Primary AI optimized preprocessing
-            const imageData = ctx.getImageData(
-              0,
-              0,
-              canvas.width,
-              canvas.height
-            );
-            const data = imageData.data;
-
-            for (let i = 0; i < data.length; i += 4) {
-              // Increase contrast and brightness for better OCR
-              const gray = (data[i] + data[i + 1] + data[i + 2]) / 3;
-              const enhanced = Math.min(
-                255,
-                Math.max(0, (gray - 128) * 1.3 + 128)
-              );
-
-              data[i] = enhanced; // R
-              data[i + 1] = enhanced; // G
-              data[i + 2] = enhanced; // B
-            }
-
-            ctx.putImageData(imageData, 0, 0);
-            break;
-
-          default:
-            // Default preprocessing (existing enhanceImageForOCR logic)
-            canvas.width = img.width * 2;
-            canvas.height = img.height * 2;
-            ctx.imageSmoothingEnabled = true;
-            ctx.imageSmoothingQuality = 'high';
-            ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-
-            const defaultImageData = ctx.getImageData(
-              0,
-              0,
-              canvas.width,
-              canvas.height
-            );
-            const defaultData = defaultImageData.data;
-
-            for (let i = 0; i < defaultData.length; i += 4) {
-              const gray =
-                (defaultData[i] + defaultData[i + 1] + defaultData[i + 2]) / 3;
-              const enhanced = Math.min(
-                255,
-                Math.max(0, (gray - 128) * 1.2 + 128)
-              );
-
-              defaultData[i] = enhanced;
-              defaultData[i + 1] = enhanced;
-              defaultData[i + 2] = enhanced;
-            }
-
-            ctx.putImageData(defaultImageData, 0, 0);
-        }
-
-        resolve(canvas.toDataURL('image/jpeg', 0.95));
-      };
-
-      img.src = imageData;
-    });
-  };
 
   // Add image enhancement before AI processing (fallback)
   const enhanceImageForOCR = (imageData: string): Promise<string> => {
@@ -191,161 +95,7 @@ export default function CameraScanner({
     });
   };
 
-  // Enhanced extraction with multiple services
-  const extractRecipeWithMultipleServices = async (
-    imageDataArray: string[],
-    retryCount: number = 0
-  ): Promise<void> => {
-    if (!imageDataArray || imageDataArray.length === 0) {
-      console.error('No image data provided to multi-service extraction');
-      return;
-    }
-
-    setAiProcessing(true);
-
-    try {
-      console.log(
-        `Starting multi-service extraction... (attempt ${retryCount + 1})`
-      );
-
-      // Try Primary AI first
-      setCurrentOCRService('Primary AI');
-      let recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
-
-      // If Primary AI failed or has missing fields, try with enhanced image preprocessing
-      if (!recipeData) {
-        console.log(
-          'Primary AI failed, trying with enhanced image preprocessing...'
-        );
-        recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
-      } else {
-        // Check if any fields are missing or too short
-        const hasTitle =
-          recipeData.title &&
-          typeof recipeData.title === 'string' &&
-          recipeData.title.trim().length > 3;
-
-        const hasIngredients =
-          recipeData.ingredients &&
-          typeof recipeData.ingredients === 'string' &&
-          recipeData.ingredients.trim().length > 10;
-
-        const hasInstructions =
-          recipeData.instructions &&
-          typeof recipeData.instructions === 'string' &&
-          recipeData.instructions.trim().length > 10;
-
-        // If any field is missing, try with enhanced image preprocessing
-        if (
-          (!hasTitle || !hasIngredients || !hasInstructions) &&
-          imageDataArray.length > 0
-        ) {
-          console.log(
-            'Some fields missing, trying with enhanced image preprocessing...'
-          );
-          const retryResult = await extractRecipeWithAI(
-            imageDataArray,
-            retryCount
-          );
-
-          if (retryResult) {
-            console.log('Enhanced preprocessing retry results:', retryResult);
-
-            // Fill in any still-missing fields
-            if (
-              !hasTitle &&
-              retryResult.title &&
-              retryResult.title.trim().length > 3
-            ) {
-              recipeData.title = retryResult.title;
-              console.log('Primary AI filled in missing title');
-            }
-
-            if (
-              !hasIngredients &&
-              retryResult.ingredients &&
-              retryResult.ingredients.trim().length > 10
-            ) {
-              recipeData.ingredients = retryResult.ingredients;
-              console.log('Primary AI filled in missing ingredients');
-            }
-
-            if (
-              !hasInstructions &&
-              retryResult.instructions &&
-              retryResult.instructions.trim().length > 10
-            ) {
-              recipeData.instructions = retryResult.instructions;
-              console.log('Primary AI filled in missing instructions');
-            }
-          }
-        }
-      }
-
-      // Update form with best results
-      if (recipeData) {
-        setTitle(recipeData.title || '');
-        setIngredients(recipeData.ingredients || '');
-        setInstructions(recipeData.instructions || '');
-
-        // Check if we still have missing fields after all services
-        const finalHasTitle =
-          recipeData.title &&
-          typeof recipeData.title === 'string' &&
-          recipeData.title.trim().length > 3;
-
-        const finalHasIngredients =
-          recipeData.ingredients &&
-          typeof recipeData.ingredients === 'string' &&
-          recipeData.ingredients.trim().length > 10;
-
-        const finalHasInstructions =
-          recipeData.instructions &&
-          typeof recipeData.instructions === 'string' &&
-          recipeData.instructions.trim().length > 10;
-
-        // If any field is still missing, automatically retry with different approach
-        if (!finalHasTitle || !finalHasIngredients || !finalHasInstructions) {
-          console.log(
-            'Fields still missing after all services, auto-retrying...'
-          );
-
-          // Wait a moment for any pending state updates, then retry
-          setTimeout(() => {
-            if (imageDataArray.length > 0) {
-              console.log(
-                'Auto-retrying extraction with different approach...'
-              );
-              extractRecipeWithMultipleServices(imageDataArray, retryCount + 1);
-            }
-          }, 1000);
-        } else {
-          setAiCompleted(true);
-        }
-      }
-    } catch (error) {
-      console.error('Multi-service extraction failed:', error);
-
-      // Fallback to retry logic
-      if (imageDataArray.length > 1 && retryCount < 2) {
-        console.log('Trying with fewer images...');
-        const fewerImages = imageDataArray.slice(
-          0,
-          Math.ceil(imageDataArray.length / 2)
-        );
-        return extractRecipeWithMultipleServices(fewerImages, retryCount + 1);
-      }
-
-      alert(
-        'Both Primary AI failed. Please fill in manually or try taking clearer photos.'
-      );
-      setAiCompleted(false);
-    } finally {
-      setAiProcessing(false);
-    }
-  };
-
-  const extractRecipeWithAI = async (
+  const extractRecipeWithAI = useCallback(async (
     imageDataArray: string[],
     retryCount = 0
   ): Promise<{
@@ -476,7 +226,118 @@ export default function CameraScanner({
       setAiCompleted(false);
       return null;
     }
-  };
+  }, []);
+
+  // Enhanced extraction with multiple services
+  const extractRecipeWithMultipleServices = useCallback(async (
+    imageDataArray: string[],
+    retryCount: number = 0
+  ): Promise<void> => {
+    if (!imageDataArray || imageDataArray.length === 0) {
+      console.error('No image data provided to multi-service extraction');
+      return;
+    }
+
+    setAiProcessing(true);
+
+    try {
+      console.log(
+        `Starting multi-service extraction... (attempt ${retryCount + 1})`
+      );
+
+      // Try Primary AI first
+      setCurrentOCRService('Primary AI');
+      let recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
+
+      // If Primary AI failed or has missing fields, try with enhanced image preprocessing
+      if (!recipeData) {
+        console.log(
+          'Primary AI failed, trying with enhanced image preprocessing...'
+        );
+        recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
+      } else {
+        // Check if any fields are missing or too short
+        const hasTitle =
+          recipeData.title &&
+          typeof recipeData.title === 'string' &&
+          recipeData.title.trim().length > 3;
+
+        const hasIngredients =
+          recipeData.ingredients &&
+          typeof recipeData.ingredients === 'string' &&
+          recipeData.ingredients.trim().length > 10;
+
+        const hasInstructions =
+          recipeData.instructions &&
+          typeof recipeData.instructions === 'string' &&
+          recipeData.instructions.trim().length > 10;
+
+        // If any field is missing, try with enhanced image preprocessing
+        if (
+          (!hasTitle || !hasIngredients || !hasInstructions) &&
+          imageDataArray.length > 0
+        ) {
+          console.log(
+            'Some fields missing, trying with enhanced image preprocessing...'
+          );
+          const retryResult = await extractRecipeWithAI(
+            imageDataArray,
+            retryCount
+          );
+
+          if (retryResult) {
+            console.log('Enhanced preprocessing retry results:', retryResult);
+
+            // Fill in any still-missing fields
+            if (
+              !hasTitle &&
+              retryResult.title &&
+              retryResult.title.trim().length > 3
+            ) {
+              recipeData.title = retryResult.title;
+              console.log('Primary AI filled in missing title');
+            }
+
+            if (
+              !hasIngredients &&
+              retryResult.ingredients &&
+              retryResult.ingredients.trim().length > 10
+            ) {
+              recipeData.ingredients = retryResult.ingredients;
+              console.log('Primary AI filled in missing ingredients');
+            }
+
+            if (
+              !hasInstructions &&
+              retryResult.instructions &&
+              retryResult.instructions.trim().length > 10
+            ) {
+              recipeData.instructions = retryResult.instructions;
+              console.log('Primary AI filled in missing instructions');
+            }
+          }
+        }
+      }
+
+      // Update form with best results
+      if (recipeData) {
+        setTitle(recipeData.title || '');
+        setIngredients(recipeData.ingredients || '');
+        setInstructions(recipeData.instructions || '');
+        setAiCompleted(true);
+        setCurrentOCRService('Primary AI');
+        console.log('Multi-service extraction completed successfully');
+      } else {
+        console.log('All services failed to extract recipe data');
+        setAiCompleted(false);
+      }
+    } catch (error) {
+      console.error('Error in multi-service extraction:', error);
+      setAiCompleted(false);
+    } finally {
+      setAiProcessing(false);
+    }
+  }, [extractRecipeWithAI]);
 
   const capture = useCallback(() => {
     try {

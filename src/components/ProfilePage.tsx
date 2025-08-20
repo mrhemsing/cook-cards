@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
 import {
@@ -28,7 +28,7 @@ export default function ProfilePage() {
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   // Function to refresh user data and update local state
-  const refreshUserData = async () => {
+  const refreshUserData = useCallback(async () => {
     if (user?.id) {
       try {
         // First try to get data from profiles table
@@ -44,9 +44,7 @@ export default function ProfilePage() {
           setProfilePhoto(profile.avatar_url || null);
         } else {
           // Fallback to user metadata
-          const {
-            data: { user: refreshedUser }
-          } = await supabase.auth.getUser();
+          const { data: { user: refreshedUser } } = await supabase.auth.getUser();
           if (refreshedUser) {
             setUsername(
               refreshedUser.user_metadata?.display_name ||
@@ -59,9 +57,7 @@ export default function ProfilePage() {
       } catch (error) {
         console.warn('Error refreshing profile data:', error);
         // Fallback to user metadata
-        const {
-          data: { user: refreshedUser }
-        } = await supabase.auth.getUser();
+        const { data: { user: refreshedUser } } = await supabase.auth.getUser();
         if (refreshedUser) {
           setUsername(
             refreshedUser.user_metadata?.display_name ||
@@ -72,7 +68,7 @@ export default function ProfilePage() {
         }
       }
     }
-  };
+  }, [user?.id]);
 
   useEffect(() => {
     if (user) {
@@ -91,7 +87,7 @@ export default function ProfilePage() {
     const interval = setInterval(refreshUserData, 30000);
 
     return () => clearInterval(interval);
-  }, [user?.id]);
+  }, [user?.id, refreshUserData]);
 
   const handleUpdateDisplayName = async () => {
     if (!username.trim()) {
@@ -205,7 +201,7 @@ export default function ProfilePage() {
       // Upload to Supabase Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}-${Date.now()}.${fileExt}`;
-      const { data, error } = await supabase.storage
+      const { error } = await supabase.storage
         .from('profile-photos')
         .upload(fileName, file);
 

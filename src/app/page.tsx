@@ -24,7 +24,7 @@ export default function Home() {
           if (!hasDisplayName) {
             // Check profiles table for display name with timeout
             try {
-              const timeoutPromise = new Promise((_, reject) =>
+              const timeoutPromise = new Promise<never>((_, reject) =>
                 setTimeout(() => reject(new Error('Timeout')), 5000)
               );
               
@@ -34,7 +34,8 @@ export default function Home() {
                 .eq('id', user.id)
                 .single();
 
-              const { data: profile } = await Promise.race([profilePromise, timeoutPromise]);
+              const result = await Promise.race([profilePromise, timeoutPromise]);
+              const { data: profile } = result;
 
               if (!profile?.display_name) {
                 setShowUsernameSetup(true);

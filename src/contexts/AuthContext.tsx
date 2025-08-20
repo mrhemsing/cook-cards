@@ -35,11 +35,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         const timeoutPromise = new Promise<never>((_, reject) =>
           setTimeout(() => reject(new Error('Session timeout')), 8000)
         );
-        
+
         const sessionPromise = supabase.auth.getSession();
         const result = await Promise.race([sessionPromise, timeoutPromise]);
-        const { data: { session } } = result;
-        
+        const {
+          data: { session }
+        } = result;
+
         setUser(session?.user ?? null);
         setLoading(false);
       } catch (error) {
@@ -62,11 +64,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
           const timeoutPromise = new Promise<never>((_, reject) =>
             setTimeout(() => reject(new Error('User refresh timeout')), 5000)
           );
-          
+
           const userPromise = supabase.auth.getUser();
           const result = await Promise.race([userPromise, timeoutPromise]);
-          const { data: { user: refreshedUser } } = result;
-          
+          const {
+            data: { user: refreshedUser }
+          } = result;
+
           setUser(refreshedUser);
         } else {
           setUser(session?.user ?? null);
