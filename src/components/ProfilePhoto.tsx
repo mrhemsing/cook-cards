@@ -19,9 +19,6 @@ export default function ProfilePhoto({
 }: ProfilePhotoProps) {
   const [imageError, setImageError] = useState(false);
 
-  // Debug logging
-  console.log('ProfilePhoto render:', { src, imageError, size });
-
   const sizeClasses = {
     sm: 'w-8 h-8',
     md: 'w-10 h-10',
@@ -39,8 +36,6 @@ export default function ProfilePhoto({
   // If there's no src, image error, or src is empty, show the placeholder
   const shouldShowPlaceholder =
     !src || imageError || (typeof src === 'string' && src.trim() === '');
-
-  console.log('ProfilePhoto shouldShowPlaceholder:', shouldShowPlaceholder);
 
   return (
     <div
