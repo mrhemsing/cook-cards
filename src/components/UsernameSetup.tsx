@@ -87,7 +87,7 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
             Welcome to Mom&apos;s Yums!
           </h1>
           <p className="text-gray-600">
-            Let's set up your profile. Choose a username to get started.
+            Let&apos;s set up your profile. Choose a username to get started.
           </p>
         </div>
 
