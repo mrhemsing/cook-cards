@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import Image from 'next/image';
 
 interface ProfilePhotoProps {
@@ -16,6 +17,8 @@ export default function ProfilePhoto({
   size = 'md',
   className = ''
 }: ProfilePhotoProps) {
+  const [imageError, setImageError] = useState(false);
+  
   const sizeClasses = {
     sm: 'w-8 h-8',
     md: 'w-10 h-10',
@@ -30,16 +33,21 @@ export default function ProfilePhoto({
     xl: 'h-10 w-10'
   };
 
+  // If there's no src, image error, or src is empty, show the placeholder
+  const shouldShowPlaceholder = !src || imageError || src.trim() === '';
+
   return (
     <div
       className={`${sizeClasses[size]} rounded-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-300 flex items-center justify-center ${className}`}>
-      {src ? (
+      {!shouldShowPlaceholder ? (
         <Image
           src={src}
           alt={alt}
           width={parseInt(sizeClasses[size].split('-')[1]) * 4}
           height={parseInt(sizeClasses[size].split('-')[1]) * 4}
           className="w-full h-full object-cover"
+          onError={() => setImageError(true)}
+          onLoad={() => setImageError(false)}
         />
       ) : (
         <div className="flex flex-col items-center justify-center text-gray-500">
