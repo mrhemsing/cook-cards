@@ -36,6 +36,11 @@ export default function RecipeBook() {
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
+  const [profileData, setProfileData] = useState<{
+    username?: string;
+    display_name?: string;
+    avatar_url?: string;
+  } | null>(null);
 
   // Categories data
   const categories = [
@@ -46,6 +51,38 @@ export default function RecipeBook() {
     { id: 4, name: 'salad', display_name: 'Salad', color: '#3B82F6' },
     { id: 6, name: 'other', display_name: 'Other', color: '#6B7280' }
   ];
+
+  // Fetch profile data from profiles table
+  const fetchProfileData = useCallback(async () => {
+    if (!user?.id) return;
+
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('username, display_name, avatar_url')
+        .eq('id', user.id)
+        .single();
+
+      if (profile && !error) {
+        setProfileData(profile);
+      } else {
+        // Fallback to user metadata
+        setProfileData({
+          username: user.user_metadata?.username,
+          display_name: user.user_metadata?.display_name,
+          avatar_url: user.user_metadata?.avatar_url
+        });
+      }
+    } catch (error) {
+      console.warn('Error fetching profile data:', error);
+      // Fallback to user metadata
+      setProfileData({
+        username: user.user_metadata?.username,
+        display_name: user.user_metadata?.display_name,
+        avatar_url: user.user_metadata?.avatar_url
+      });
+    }
+  }, [user?.id, user?.user_metadata]);
 
   const fetchRecipes = useCallback(async () => {
     if (!user?.id) return;
@@ -75,12 +112,14 @@ export default function RecipeBook() {
 
   useEffect(() => {
     fetchRecipes();
-  }, [fetchRecipes]);
+    fetchProfileData(); // Fetch profile data on mount
+  }, [fetchRecipes, fetchProfileData]);
 
   const handleRecipeAdded = () => {
     setShowForm(false);
     setShowScanner(false);
     fetchRecipes();
+    fetchProfileData(); // Refresh profile data when recipes are added
   };
 
   const handleShareRecipeBook = async () => {
@@ -162,9 +201,13 @@ export default function RecipeBook() {
                   href="/profile"
                   className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
                   <ProfilePhoto
-                    src={user?.user_metadata?.avatar_url}
+                    src={
+                      profileData?.avatar_url || user?.user_metadata?.avatar_url
+                    }
                     size="md"
                     displayName={
+                      profileData?.display_name ||
+                      profileData?.username ||
                       user?.user_metadata?.display_name ||
                       user?.user_metadata?.username ||
                       user?.user_metadata?.full_name ||
@@ -172,7 +215,9 @@ export default function RecipeBook() {
                     }
                   />
                   <span className="text-sm text-gray-600 hover:text-[#C76572] transition-colors">
-                    {user?.user_metadata?.display_name ||
+                    {profileData?.display_name ||
+                      profileData?.username ||
+                      user?.user_metadata?.display_name ||
                       user?.user_metadata?.username ||
                       user?.user_metadata?.full_name ||
                       user?.email?.split('@')[0]}
@@ -245,9 +290,11 @@ export default function RecipeBook() {
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
             <ProfilePhoto
-              src={user?.user_metadata?.avatar_url}
+              src={profileData?.avatar_url || user?.user_metadata?.avatar_url}
               size="lg"
               displayName={
+                profileData?.display_name ||
+                profileData?.username ||
                 user?.user_metadata?.display_name ||
                 user?.user_metadata?.username ||
                 user?.user_metadata?.full_name ||
@@ -256,12 +303,13 @@ export default function RecipeBook() {
             />
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
-                {user?.user_metadata?.display_name ||
+                {profileData?.display_name ||
+                  profileData?.username ||
+                  user?.user_metadata?.display_name ||
                   user?.user_metadata?.username ||
                   user?.user_metadata?.full_name ||
                   user?.email?.split('@')[0]}
-                &apos;s <br className="block sm:hidden" />
-                Recipe Collection
+                &apos;s Recipe Collection
               </h1>
               <p className="text-lg text-gray-600">
                 {recipes.length} recipe{recipes.length !== 1 ? 's' : ''} in your
