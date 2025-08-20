@@ -3,7 +3,16 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/lib/supabase';
-import { ArrowLeft, User, Mail, Edit2, Check, X, Camera, Trash2 } from 'lucide-react';
+import {
+  ArrowLeft,
+  User,
+  Mail,
+  Edit2,
+  Check,
+  X,
+  Camera,
+  Trash2
+} from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import ProfilePhoto from './ProfilePhoto';
@@ -113,7 +122,9 @@ export default function ProfilePage() {
     setSuccess('');
   };
 
-  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
     const file = event.target.files?.[0];
     if (!file || !user?.id) return;
 
@@ -143,9 +154,9 @@ export default function ProfilePage() {
       if (error) throw error;
 
       // Get public URL
-      const { data: { publicUrl } } = supabase.storage
-        .from('profile-photos')
-        .getPublicUrl(fileName);
+      const {
+        data: { publicUrl }
+      } = supabase.storage.from('profile-photos').getPublicUrl(fileName);
 
       // Update user metadata
       const { error: updateError } = await supabase.auth.updateUser({
@@ -158,7 +169,8 @@ export default function ProfilePage() {
       setSuccess('Profile photo updated successfully!');
     } catch (error: unknown) {
       console.error('Error uploading photo:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to upload photo';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to upload photo';
       setError(errorMessage);
     } finally {
       setUploadingPhoto(false);
@@ -183,7 +195,8 @@ export default function ProfilePage() {
       setSuccess('Profile photo removed successfully!');
     } catch (error: unknown) {
       console.error('Error removing photo:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to remove photo';
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to remove photo';
       setError(errorMessage);
     } finally {
       setUploadingPhoto(false);
@@ -222,51 +235,50 @@ export default function ProfilePage() {
       {/* Main Content */}
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
-                     {/* Profile Header */}
-           <div className="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-8 text-white">
-             <div className="flex items-center space-x-4">
-               <div className="relative">
-                 <ProfilePhoto 
-                   src={profilePhoto} 
-                   size="xl" 
-                   className="bg-white bg-opacity-20"
-                 />
-                 
-                 {/* Photo upload controls */}
-                 <div className="absolute -bottom-2 -right-2 flex space-x-1">
-                   <label className="cursor-pointer bg-green-500 hover:bg-green-600 p-1 rounded-full transition-colors">
-                     <Camera className="h-3 w-3 text-white" />
-                     <input
-                       type="file"
-                       accept="image/*"
-                       onChange={handlePhotoUpload}
-                       className="hidden"
-                       disabled={uploadingPhoto}
-                     />
-                   </label>
-                   {profilePhoto && (
-                     <button
-                       onClick={handleRemovePhoto}
-                       disabled={uploadingPhoto}
-                       className="bg-red-500 hover:bg-red-600 p-1 rounded-full transition-colors disabled:opacity-50"
-                     >
-                       <Trash2 className="h-3 w-3 text-white" />
-                     </button>
-                   )}
-                 </div>
-                 
-                 {uploadingPhoto && (
-                   <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
-                     <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                   </div>
-                 )}
-               </div>
-               <div>
-                 <h1 className="text-3xl font-bold">{username || 'User'}</h1>
-                 <p className="text-orange-100">Profile Settings</p>
-               </div>
-             </div>
-           </div>
+          {/* Profile Header */}
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-8 text-white">
+            <div className="flex items-center space-x-4">
+              <div className="relative">
+                <ProfilePhoto
+                  src={profilePhoto}
+                  size="xl"
+                  className="bg-white bg-opacity-20"
+                />
+
+                {/* Photo upload controls */}
+                <div className="absolute -bottom-2 -right-2 flex space-x-1">
+                  <label className="cursor-pointer bg-green-500 hover:bg-green-600 p-1 rounded-full transition-colors">
+                    <Camera className="h-3 w-3 text-white" />
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                      disabled={uploadingPhoto}
+                    />
+                  </label>
+                  {profilePhoto && (
+                    <button
+                      onClick={handleRemovePhoto}
+                      disabled={uploadingPhoto}
+                      className="bg-red-500 hover:bg-red-600 p-1 rounded-full transition-colors disabled:opacity-50">
+                      <Trash2 className="h-3 w-3 text-white" />
+                    </button>
+                  )}
+                </div>
+
+                {uploadingPhoto && (
+                  <div className="absolute inset-0 bg-black bg-opacity-50 rounded-full flex items-center justify-center">
+                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  </div>
+                )}
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">{username || 'User'}</h1>
+                <p className="text-orange-100">Profile Settings</p>
+              </div>
+            </div>
+          </div>
 
           {/* Profile Content */}
           <div className="p-6 space-y-6">

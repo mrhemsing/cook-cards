@@ -10,11 +10,11 @@ interface ProfilePhotoProps {
   className?: string;
 }
 
-export default function ProfilePhoto({ 
-  src, 
-  alt = "Profile photo", 
+export default function ProfilePhoto({
+  src,
+  alt = 'Profile photo',
   size = 'md',
-  className = '' 
+  className = ''
 }: ProfilePhotoProps) {
   const sizeClasses = {
     sm: 'w-8 h-8',
@@ -31,7 +31,8 @@ export default function ProfilePhoto({
   };
 
   return (
-    <div className={`${sizeClasses[size]} rounded-full overflow-hidden bg-gray-200 flex items-center justify-center ${className}`}>
+    <div
+      className={`${sizeClasses[size]} rounded-full overflow-hidden bg-gray-200 flex items-center justify-center ${className}`}>
       {src ? (
         <Image
           src={src}
