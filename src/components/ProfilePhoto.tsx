@@ -46,7 +46,7 @@ export default function ProfilePhoto({
 
   return (
     <div
-      className={`${sizeClasses[size]} rounded-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-300 flex items-center justify-center ${className}`}>
+      className={`${sizeClasses[size]} rounded-full overflow-hidden bg-gradient-to-br from-gray-100 to-gray-300 flex items-center justify-center flex-shrink-0 ${className}`}>
       {!shouldShowPlaceholder ? (
         <Image
           src={src}
