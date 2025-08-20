@@ -37,11 +37,11 @@ export default function CameraScanner({
 
   // Categories data
   const categories: Category[] = [
+    { id: 3, name: 'appetizers', display_name: 'Appetizers', color: '#10B981' },
     { id: 1, name: 'baking', display_name: 'Baking', color: '#F59E0B' },
     { id: 2, name: 'desserts', display_name: 'Desserts', color: '#EC4899' },
-    { id: 3, name: 'appetizers', display_name: 'Appetizers', color: '#10B981' },
-    { id: 4, name: 'salad', display_name: 'Salad', color: '#3B82F6' },
     { id: 5, name: 'main', display_name: 'Main', color: '#EF4444' },
+    { id: 4, name: 'salad', display_name: 'Salad', color: '#3B82F6' },
     { id: 6, name: 'other', display_name: 'Other', color: '#6B7280' }
   ];
 
@@ -95,249 +95,256 @@ export default function CameraScanner({
     });
   };
 
-  const extractRecipeWithAI = useCallback(async (
-    imageDataArray: string[],
-    retryCount = 0
-  ): Promise<{
-    title: string;
-    ingredients: string;
-    instructions: string;
-  } | null> => {
-    if (!imageDataArray || imageDataArray.length === 0) {
-      console.error('No image data provided to AI extraction');
-      return null;
-    }
-
-    try {
-      console.log(`Starting AI extraction... (attempt ${retryCount + 1})`); // Debug log
-
-      // Validate image data format for all images
-      for (const imageData of imageDataArray) {
-        if (!imageData.startsWith('data:image/')) {
-          throw new Error('Invalid image format');
-        }
+  const extractRecipeWithAI = useCallback(
+    async (
+      imageDataArray: string[],
+      retryCount = 0
+    ): Promise<{
+      title: string;
+      ingredients: string;
+      instructions: string;
+    } | null> => {
+      if (!imageDataArray || imageDataArray.length === 0) {
+        console.error('No image data provided to AI extraction');
+        return null;
       }
-
-      // Create FormData for the API with multiple images
-      const formData = new FormData();
-
-      // Add all images to the form data
-      for (let i = 0; i < imageDataArray.length; i++) {
-        const response = await fetch(imageDataArray[i]);
-        if (!response.ok) {
-          throw new Error(`Failed to fetch image ${i + 1}: ${response.status}`);
-        }
-        const blob = await response.blob();
-        if (!blob || blob.size === 0) {
-          throw new Error(`Invalid image blob for image ${i + 1}`);
-        }
-        formData.append('images', blob, `recipe-card-${i + 1}.jpg`);
-      }
-
-      console.log('Calling AI API...'); // Debug log
-
-      // Call AI service to extract recipe with timeout
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
       try {
-        const aiResponse = await fetch('/api/extract-recipe', {
-          method: 'POST',
-          body: formData,
-          signal: controller.signal
-        });
+        console.log(`Starting AI extraction... (attempt ${retryCount + 1})`); // Debug log
 
-        clearTimeout(timeoutId);
-
-        if (!aiResponse.ok) {
-          const errorText = await aiResponse.text();
-          console.error('AI API error:', aiResponse.status, errorText);
-          throw new Error(`AI extraction failed: ${aiResponse.status}`);
+        // Validate image data format for all images
+        for (const imageData of imageDataArray) {
+          if (!imageData.startsWith('data:image/')) {
+            throw new Error('Invalid image format');
+          }
         }
 
-        const recipeData = await aiResponse.json();
-        console.log('AI response:', recipeData); // Debug log
-        console.log('AI response types:', {
-          title: typeof recipeData.title,
-          ingredients: typeof recipeData.ingredients,
-          instructions: typeof recipeData.instructions
-        }); // Debug log
+        // Create FormData for the API with multiple images
+        const formData = new FormData();
 
-        // Validate AI response
-        if (!recipeData || typeof recipeData !== 'object') {
-          throw new Error('Invalid AI response format');
+        // Add all images to the form data
+        for (let i = 0; i < imageDataArray.length; i++) {
+          const response = await fetch(imageDataArray[i]);
+          if (!response.ok) {
+            throw new Error(
+              `Failed to fetch image ${i + 1}: ${response.status}`
+            );
+          }
+          const blob = await response.blob();
+          if (!blob || blob.size === 0) {
+            throw new Error(`Invalid image blob for image ${i + 1}`);
+          }
+          formData.append('images', blob, `recipe-card-${i + 1}.jpg`);
         }
 
-        // Check if ingredients are missing or too short
-        const hasIngredients =
-          recipeData.ingredients &&
-          typeof recipeData.ingredients === 'string' &&
-          recipeData.ingredients.trim().length > 10;
+        console.log('Calling AI API...'); // Debug log
 
-        // If ingredients are missing and we have multiple images, try with different combinations
-        if (!hasIngredients && imageDataArray.length > 1 && retryCount < 2) {
-          console.log(
-            'Ingredients missing, trying with different image combination...'
+        // Call AI service to extract recipe with timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
+
+        try {
+          const aiResponse = await fetch('/api/extract-recipe', {
+            method: 'POST',
+            body: formData,
+            signal: controller.signal
+          });
+
+          clearTimeout(timeoutId);
+
+          if (!aiResponse.ok) {
+            const errorText = await aiResponse.text();
+            console.error('AI API error:', aiResponse.status, errorText);
+            throw new Error(`AI extraction failed: ${aiResponse.status}`);
+          }
+
+          const recipeData = await aiResponse.json();
+          console.log('AI response:', recipeData); // Debug log
+          console.log('AI response types:', {
+            title: typeof recipeData.title,
+            ingredients: typeof recipeData.ingredients,
+            instructions: typeof recipeData.instructions
+          }); // Debug log
+
+          // Validate AI response
+          if (!recipeData || typeof recipeData !== 'object') {
+            throw new Error('Invalid AI response format');
+          }
+
+          // Check if ingredients are missing or too short
+          const hasIngredients =
+            recipeData.ingredients &&
+            typeof recipeData.ingredients === 'string' &&
+            recipeData.ingredients.trim().length > 10;
+
+          // If ingredients are missing and we have multiple images, try with different combinations
+          if (!hasIngredients && imageDataArray.length > 1 && retryCount < 2) {
+            console.log(
+              'Ingredients missing, trying with different image combination...'
+            );
+
+            // Try with just the first image
+            const singleImageArray = [imageDataArray[0]];
+            return extractRecipeWithAI(singleImageArray, retryCount + 1);
+          }
+
+          // Return the recipe data for the multi-service function to handle
+          return {
+            title: typeof recipeData.title === 'string' ? recipeData.title : '',
+            ingredients:
+              typeof recipeData.ingredients === 'string'
+                ? recipeData.ingredients
+                : '',
+            instructions:
+              typeof recipeData.instructions === 'string'
+                ? recipeData.instructions
+                : ''
+          };
+        } catch (fetchError) {
+          clearTimeout(timeoutId);
+          if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+            throw new Error('AI extraction timed out. Please try again.');
+          }
+          throw fetchError;
+        }
+      } catch (error) {
+        console.error('AI extraction error:', error);
+
+        // If we have multiple images and this failed, try with fewer images
+        if (imageDataArray.length > 1 && retryCount < 2) {
+          console.log('AI extraction failed, trying with fewer images...');
+          const fewerImages = imageDataArray.slice(
+            0,
+            Math.ceil(imageDataArray.length / 2)
           );
-
-          // Try with just the first image
-          const singleImageArray = [imageDataArray[0]];
-          return extractRecipeWithAI(singleImageArray, retryCount + 1);
+          return extractRecipeWithAI(fewerImages, retryCount + 1);
         }
 
-        // Return the recipe data for the multi-service function to handle
-        return {
-          title: typeof recipeData.title === 'string' ? recipeData.title : '',
-          ingredients:
-            typeof recipeData.ingredients === 'string'
-              ? recipeData.ingredients
-              : '',
-          instructions:
-            typeof recipeData.instructions === 'string'
-              ? recipeData.instructions
-              : ''
-        };
-      } catch (fetchError) {
-        clearTimeout(timeoutId);
-        if (fetchError instanceof Error && fetchError.name === 'AbortError') {
-          throw new Error('AI extraction timed out. Please try again.');
-        }
-        throw fetchError;
-      }
-    } catch (error) {
-      console.error('AI extraction error:', error);
-
-      // If we have multiple images and this failed, try with fewer images
-      if (imageDataArray.length > 1 && retryCount < 2) {
-        console.log('AI extraction failed, trying with fewer images...');
-        const fewerImages = imageDataArray.slice(
-          0,
-          Math.ceil(imageDataArray.length / 2)
+        // Show error to user
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error occurred';
+        alert(
+          `AI extraction failed: ${errorMessage}. Please fill in manually.`
         );
-        return extractRecipeWithAI(fewerImages, retryCount + 1);
+
+        // Reset AI states on error
+        setAiCompleted(false);
+        return null;
       }
-
-      // Show error to user
-      const errorMessage =
-        error instanceof Error ? error.message : 'Unknown error occurred';
-      alert(`AI extraction failed: ${errorMessage}. Please fill in manually.`);
-
-      // Reset AI states on error
-      setAiCompleted(false);
-      return null;
-    }
-  }, []);
+    },
+    []
+  );
 
   // Enhanced extraction with multiple services
-  const extractRecipeWithMultipleServices = useCallback(async (
-    imageDataArray: string[],
-    retryCount: number = 0
-  ): Promise<void> => {
-    if (!imageDataArray || imageDataArray.length === 0) {
-      console.error('No image data provided to multi-service extraction');
-      return;
-    }
+  const extractRecipeWithMultipleServices = useCallback(
+    async (imageDataArray: string[], retryCount: number = 0): Promise<void> => {
+      if (!imageDataArray || imageDataArray.length === 0) {
+        console.error('No image data provided to multi-service extraction');
+        return;
+      }
 
-    setAiProcessing(true);
+      setAiProcessing(true);
 
-    try {
-      console.log(
-        `Starting multi-service extraction... (attempt ${retryCount + 1})`
-      );
-
-      // Try Primary AI first
-      setCurrentOCRService('Primary AI');
-      let recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
-
-      // If Primary AI failed or has missing fields, try with enhanced image preprocessing
-      if (!recipeData) {
+      try {
         console.log(
-          'Primary AI failed, trying with enhanced image preprocessing...'
+          `Starting multi-service extraction... (attempt ${retryCount + 1})`
         );
-        recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
-      } else {
-        // Check if any fields are missing or too short
-        const hasTitle =
-          recipeData.title &&
-          typeof recipeData.title === 'string' &&
-          recipeData.title.trim().length > 3;
 
-        const hasIngredients =
-          recipeData.ingredients &&
-          typeof recipeData.ingredients === 'string' &&
-          recipeData.ingredients.trim().length > 10;
+        // Try Primary AI first
+        setCurrentOCRService('Primary AI');
+        let recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
 
-        const hasInstructions =
-          recipeData.instructions &&
-          typeof recipeData.instructions === 'string' &&
-          recipeData.instructions.trim().length > 10;
-
-        // If any field is missing, try with enhanced image preprocessing
-        if (
-          (!hasTitle || !hasIngredients || !hasInstructions) &&
-          imageDataArray.length > 0
-        ) {
+        // If Primary AI failed or has missing fields, try with enhanced image preprocessing
+        if (!recipeData) {
           console.log(
-            'Some fields missing, trying with enhanced image preprocessing...'
+            'Primary AI failed, trying with enhanced image preprocessing...'
           );
-          const retryResult = await extractRecipeWithAI(
-            imageDataArray,
-            retryCount
-          );
+          recipeData = await extractRecipeWithAI(imageDataArray, retryCount);
+        } else {
+          // Check if any fields are missing or too short
+          const hasTitle =
+            recipeData.title &&
+            typeof recipeData.title === 'string' &&
+            recipeData.title.trim().length > 3;
 
-          if (retryResult) {
-            console.log('Enhanced preprocessing retry results:', retryResult);
+          const hasIngredients =
+            recipeData.ingredients &&
+            typeof recipeData.ingredients === 'string' &&
+            recipeData.ingredients.trim().length > 10;
 
-            // Fill in any still-missing fields
-            if (
-              !hasTitle &&
-              retryResult.title &&
-              retryResult.title.trim().length > 3
-            ) {
-              recipeData.title = retryResult.title;
-              console.log('Primary AI filled in missing title');
-            }
+          const hasInstructions =
+            recipeData.instructions &&
+            typeof recipeData.instructions === 'string' &&
+            recipeData.instructions.trim().length > 10;
 
-            if (
-              !hasIngredients &&
-              retryResult.ingredients &&
-              retryResult.ingredients.trim().length > 10
-            ) {
-              recipeData.ingredients = retryResult.ingredients;
-              console.log('Primary AI filled in missing ingredients');
-            }
+          // If any field is missing, try with enhanced image preprocessing
+          if (
+            (!hasTitle || !hasIngredients || !hasInstructions) &&
+            imageDataArray.length > 0
+          ) {
+            console.log(
+              'Some fields missing, trying with enhanced image preprocessing...'
+            );
+            const retryResult = await extractRecipeWithAI(
+              imageDataArray,
+              retryCount
+            );
 
-            if (
-              !hasInstructions &&
-              retryResult.instructions &&
-              retryResult.instructions.trim().length > 10
-            ) {
-              recipeData.instructions = retryResult.instructions;
-              console.log('Primary AI filled in missing instructions');
+            if (retryResult) {
+              console.log('Enhanced preprocessing retry results:', retryResult);
+
+              // Fill in any still-missing fields
+              if (
+                !hasTitle &&
+                retryResult.title &&
+                retryResult.title.trim().length > 3
+              ) {
+                recipeData.title = retryResult.title;
+                console.log('Primary AI filled in missing title');
+              }
+
+              if (
+                !hasIngredients &&
+                retryResult.ingredients &&
+                retryResult.ingredients.trim().length > 10
+              ) {
+                recipeData.ingredients = retryResult.ingredients;
+                console.log('Primary AI filled in missing ingredients');
+              }
+
+              if (
+                !hasInstructions &&
+                retryResult.instructions &&
+                retryResult.instructions.trim().length > 10
+              ) {
+                recipeData.instructions = retryResult.instructions;
+                console.log('Primary AI filled in missing instructions');
+              }
             }
           }
         }
-      }
 
-      // Update form with best results
-      if (recipeData) {
-        setTitle(recipeData.title || '');
-        setIngredients(recipeData.ingredients || '');
-        setInstructions(recipeData.instructions || '');
-        setAiCompleted(true);
-        setCurrentOCRService('Primary AI');
-        console.log('Multi-service extraction completed successfully');
-      } else {
-        console.log('All services failed to extract recipe data');
+        // Update form with best results
+        if (recipeData) {
+          setTitle(recipeData.title || '');
+          setIngredients(recipeData.ingredients || '');
+          setInstructions(recipeData.instructions || '');
+          setAiCompleted(true);
+          setCurrentOCRService('Primary AI');
+          console.log('Multi-service extraction completed successfully');
+        } else {
+          console.log('All services failed to extract recipe data');
+          setAiCompleted(false);
+        }
+      } catch (error) {
+        console.error('Error in multi-service extraction:', error);
         setAiCompleted(false);
+      } finally {
+        setAiProcessing(false);
       }
-    } catch (error) {
-      console.error('Error in multi-service extraction:', error);
-      setAiCompleted(false);
-    } finally {
-      setAiProcessing(false);
-    }
-  }, [extractRecipeWithAI]);
+    },
+    [extractRecipeWithAI]
+  );
 
   const capture = useCallback(() => {
     try {
