@@ -227,14 +227,32 @@ export default function RecipeBook() {
 
               {/* Mobile Layout - Username and Sign Out on separate lines */}
               <div className="md:hidden flex flex-col items-end space-y-1">
-                <Link
-                  href="/profile"
-                  className="text-sm text-gray-600 hover:text-[#C76572] transition-colors font-medium">
-                  {user?.user_metadata?.display_name ||
-                    user?.user_metadata?.username ||
-                    user?.user_metadata?.full_name ||
-                    user?.email?.split('@')[0]}
-                </Link>
+                <div className="flex items-center space-x-2 mb-1">
+                  <ProfilePhoto
+                    src={
+                      profileData?.avatar_url || user?.user_metadata?.avatar_url
+                    }
+                    size="sm"
+                    displayName={
+                      profileData?.display_name ||
+                      profileData?.username ||
+                      user?.user_metadata?.display_name ||
+                      user?.user_metadata?.username ||
+                      user?.user_metadata?.full_name ||
+                      user?.email?.split('@')[0]
+                    }
+                  />
+                  <Link
+                    href="/profile"
+                    className="text-sm text-gray-600 hover:text-[#C76572] transition-colors font-medium">
+                    {profileData?.display_name ||
+                      profileData?.username ||
+                      user?.user_metadata?.display_name ||
+                      user?.user_metadata?.username ||
+                      user?.user_metadata?.full_name ||
+                      user?.email?.split('@')[0]}
+                  </Link>
+                </div>
                 <button
                   onClick={signOut}
                   className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
