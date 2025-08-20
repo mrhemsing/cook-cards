@@ -29,13 +29,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
+    // Get initial session with timeout protection
     const getSession = async () => {
-      const {
-        data: { session }
-      } = await supabase.auth.getSession();
-      setUser(session?.user ?? null);
-      setLoading(false);
+      try {
+        const timeoutPromise = new Promise<never>((_, reject) =>
+          setTimeout(() => reject(new Error('Session timeout')), 8000)
+        );
+        
+        const sessionPromise = supabase.auth.getSession();
+        const result = await Promise.race([sessionPromise, timeoutPromise]);
+        const { data: { session } } = result;
+        
+        setUser(session?.user ?? null);
+        setLoading(false);
+      } catch (error) {
+        console.warn('Session check failed or timed out:', error);
+        // On timeout or error, assume no session and stop loading
+        setUser(null);
+        setLoading(false);
+      }
     };
 
     getSession();
@@ -44,16 +56,28 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const {
       data: { subscription }
     } = supabase.auth.onAuthStateChange(async (event, session) => {
-      if (event === 'SIGNED_IN' && session?.user) {
-        // Refresh user data to get latest metadata
-        const {
-          data: { user: refreshedUser }
-        } = await supabase.auth.getUser();
-        setUser(refreshedUser);
-      } else {
+      try {
+        if (event === 'SIGNED_IN' && session?.user) {
+          // Refresh user data to get latest metadata with timeout
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('User refresh timeout')), 5000)
+          );
+          
+          const userPromise = supabase.auth.getUser();
+          const result = await Promise.race([userPromise, timeoutPromise]);
+          const { data: { user: refreshedUser } } = result;
+          
+          setUser(refreshedUser);
+        } else {
+          setUser(session?.user ?? null);
+        }
+        setLoading(false);
+      } catch (error) {
+        console.warn('Auth state change handling failed:', error);
+        // On error, use the session data we have and stop loading
         setUser(session?.user ?? null);
+        setLoading(false);
       }
-      setLoading(false);
     });
 
     return () => subscription.unsubscribe();

@@ -156,34 +156,56 @@ export default function RecipeBook() {
             </div>
 
             <div className="flex items-center space-x-4">
-              {/* Profile Photo */}
-              <Link
-                href="/profile"
-                className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-                <ProfilePhoto
-                  src={user?.user_metadata?.avatar_url}
-                  size="md"
-                  displayName={
-                    user?.user_metadata?.display_name ||
-                    user?.user_metadata?.username ||
-                    user?.user_metadata?.full_name ||
-                    user?.email?.split('@')[0]
-                  }
-                />
-                <span className="text-sm text-gray-600 hover:text-[#C76572] transition-colors">
+              {/* Profile Photo - Desktop Only */}
+              <div className="hidden md:block">
+                <Link
+                  href="/profile"
+                  className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
+                  <ProfilePhoto
+                    src={user?.user_metadata?.avatar_url}
+                    size="md"
+                    displayName={
+                      user?.user_metadata?.display_name ||
+                      user?.user_metadata?.username ||
+                      user?.user_metadata?.full_name ||
+                      user?.email?.split('@')[0]
+                    }
+                  />
+                  <span className="text-sm text-gray-600 hover:text-[#C76572] transition-colors">
+                    {user?.user_metadata?.display_name ||
+                      user?.user_metadata?.username ||
+                      user?.user_metadata?.full_name ||
+                      user?.email?.split('@')[0]}
+                  </span>
+                </Link>
+              </div>
+
+              {/* Mobile Layout - Username and Sign Out on separate lines */}
+              <div className="md:hidden flex flex-col items-end space-y-1">
+                <Link
+                  href="/profile"
+                  className="text-sm text-gray-600 hover:text-[#C76572] transition-colors font-medium">
                   {user?.user_metadata?.display_name ||
                     user?.user_metadata?.username ||
                     user?.user_metadata?.full_name ||
                     user?.email?.split('@')[0]}
-                </span>
-              </Link>
+                </Link>
+                <button
+                  onClick={signOut}
+                  className="text-xs text-gray-500 hover:text-gray-700 transition-colors">
+                  Sign Out
+                </button>
+              </div>
 
-              <button
-                onClick={signOut}
-                className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
-                <LogOut className="h-4 w-4" />
-                Sign Out
-              </button>
+              {/* Desktop Sign Out Button */}
+              <div className="hidden md:block">
+                <button
+                  onClick={signOut}
+                  className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">
+                  <LogOut className="h-4 w-4" />
+                  Sign Out
+                </button>
+              </div>
             </div>
           </div>
         </div>

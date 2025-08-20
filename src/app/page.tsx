@@ -22,23 +22,29 @@ export default function Home() {
             user.user_metadata?.display_name || user.user_metadata?.username;
 
           if (!hasDisplayName) {
-            // Check profiles table for display name
+            // Check profiles table for display name with timeout
             try {
-              const { data: profile } = await supabase
+              const timeoutPromise = new Promise((_, reject) =>
+                setTimeout(() => reject(new Error('Timeout')), 5000)
+              );
+              
+              const profilePromise = supabase
                 .from('profiles')
                 .select('display_name')
                 .eq('id', user.id)
                 .single();
+
+              const { data: profile } = await Promise.race([profilePromise, timeoutPromise]);
 
               if (!profile?.display_name) {
                 setShowUsernameSetup(true);
               }
             } catch (profileError) {
               console.warn(
-                'Profiles table does not exist or is not accessible:',
+                'Profiles table check failed or timed out:',
                 profileError
               );
-              // If profiles table doesn't exist, show display name setup
+              // If profiles table check fails, assume they need to set username
               setShowUsernameSetup(true);
             }
           }
@@ -46,15 +52,24 @@ export default function Home() {
           console.error('Error checking display name:', error);
           // If there's an error, assume they need to set username
           setShowUsernameSetup(true);
+        } finally {
+          // Always set checkingUsername to false, regardless of success or failure
+          setCheckingUsername(false);
         }
-        setCheckingUsername(false);
       } else {
         // No user, stop checking
         setCheckingUsername(false);
       }
     };
 
+    // Add a timeout to prevent infinite loading
+    const timeoutId = setTimeout(() => {
+      setCheckingUsername(false);
+    }, 10000); // 10 second timeout
+
     checkDisplayName();
+
+    return () => clearTimeout(timeoutId);
   }, [user]);
 
   if (loading || checkingUsername) {
