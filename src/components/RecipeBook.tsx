@@ -9,6 +9,7 @@ import RecipeForm from './RecipeForm';
 import ErrorBoundary from './ErrorBoundary';
 import { Camera, LogOut, Plus, Search, Share2 } from 'lucide-react';
 import Image from 'next/image';
+import Link from 'next/link';
 
 interface Recipe {
   id: string;
@@ -144,9 +145,15 @@ export default function RecipeBook() {
             </div>
 
             <div className="flex flex-col items-end space-y-2">
-              <span className="text-sm text-gray-600 text-right">
-                Welcome, {user?.user_metadata?.full_name || user?.email}
-              </span>
+              <Link
+                href="/profile"
+                className="text-sm text-gray-600 text-right hover:text-[#C76572] transition-colors cursor-pointer">
+                Welcome,{' '}
+                {user?.user_metadata?.display_name ||
+                  user?.user_metadata?.username ||
+                  user?.user_metadata?.full_name ||
+                  user?.email?.split('@')[0]}
+              </Link>
               <button
                 onClick={signOut}
                 className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors">

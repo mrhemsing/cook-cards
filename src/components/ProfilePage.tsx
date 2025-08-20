@@ -1,0 +1,230 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/lib/supabase';
+import { ArrowLeft, User, Mail, Edit2, Check, X } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+
+export default function ProfilePage() {
+  const { user, signOut } = useAuth();
+  const [username, setUsername] = useState('');
+  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
+
+  useEffect(() => {
+    if (user) {
+      setUsername(
+        user.user_metadata?.display_name || user.user_metadata?.username || ''
+      );
+    }
+  }, [user]);
+
+  const handleUpdateUsername = async () => {
+    if (!username.trim()) {
+      setError('Username cannot be empty');
+      return;
+    }
+
+    if (username.length < 3) {
+      setError('Username must be at least 3 characters long');
+      return;
+    }
+
+    if (username.length > 20) {
+      setError('Username must be 20 characters or less');
+      return;
+    }
+
+    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+      setError('Username can only contain letters, numbers, and underscores');
+      return;
+    }
+
+    setLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      // Update the user's profile with the new username
+      const { error: profileError } = await supabase.from('profiles').upsert({
+        username: username.toLowerCase(),
+        display_name: username,
+        updated_at: new Date().toISOString()
+      });
+
+      if (profileError) throw profileError;
+
+      // Update the user's metadata
+      const { error: updateError } = await supabase.auth.updateUser({
+        data: {
+          username: username.toLowerCase(),
+          display_name: username
+        }
+      });
+
+      if (updateError) throw updateError;
+
+      setSuccess('Username updated successfully!');
+      setIsEditing(false);
+    } catch (error: unknown) {
+      console.error('Error updating username:', error);
+      const errorMessage =
+        error instanceof Error ? error.message : 'Failed to update username';
+      setError(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setUsername(
+      user?.user_metadata?.display_name || user?.user_metadata?.username || ''
+    );
+    setIsEditing(false);
+    setError('');
+    setSuccess('');
+  };
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Link href="/" className="flex items-center mr-4">
+                <ArrowLeft className="h-5 w-5 text-gray-600 hover:text-gray-900 transition-colors" />
+              </Link>
+              <Image
+                src="/moms_yums_logo.svg"
+                alt="Moms Yums Logo"
+                width={32}
+                height={32}
+                className="h-8 w-8 mr-3"
+              />
+              <h1 className="text-xl font-bold text-[#C76572] font-calistoga">
+                MOM&apos;S YUMS
+              </h1>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+          {/* Profile Header */}
+          <div className="bg-gradient-to-r from-orange-500 to-red-500 px-6 py-8 text-white">
+            <div className="flex items-center space-x-4">
+              <div className="w-20 h-20 bg-white bg-opacity-20 rounded-full flex items-center justify-center">
+                <User className="h-10 w-10" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold">{username || 'User'}</h1>
+                <p className="text-orange-100">Profile Settings</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Profile Content */}
+          <div className="p-6 space-y-6">
+            {/* Basic Information */}
+            <div>
+              <h2 className="text-xl font-semibold text-gray-900 mb-4">
+                Basic Information
+              </h2>
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <Mail className="h-5 w-5 text-gray-400" />
+                  <div>
+                    <p className="text-sm text-gray-500">Email</p>
+                    <p className="text-gray-900">{user.email}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-3">
+                  <User className="h-5 w-5 text-gray-400" />
+                  <div className="flex-1">
+                    <p className="text-sm text-gray-500">Username</p>
+                    {isEditing ? (
+                      <div className="flex items-center space-x-2 mt-1">
+                        <input
+                          type="text"
+                          value={username}
+                          onChange={e => setUsername(e.target.value)}
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                          placeholder="Enter username"
+                        />
+                        <button
+                          onClick={handleUpdateUsername}
+                          disabled={loading}
+                          className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50">
+                          {loading ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <Check className="h-4 w-4" />
+                          )}
+                        </button>
+                        <button
+                          onClick={handleCancelEdit}
+                          className="px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-center space-x-2 mt-1">
+                        <p className="text-gray-900">{username || 'Not set'}</p>
+                        <button
+                          onClick={() => setIsEditing(true)}
+                          className="p-1 text-gray-400 hover:text-gray-600 transition-colors">
+                          <Edit2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Messages */}
+            {error && (
+              <div className="p-4 bg-red-100 border border-red-300 rounded-lg">
+                <p className="text-red-700 text-sm">{error}</p>
+              </div>
+            )}
+
+            {success && (
+              <div className="p-4 bg-green-100 border border-green-300 rounded-lg">
+                <p className="text-green-700 text-sm">{success}</p>
+              </div>
+            )}
+
+            {/* Actions */}
+            <div className="pt-6 border-t border-gray-200">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <Link
+                  href="/"
+                  className="flex-1 px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium rounded-lg hover:from-orange-600 hover:to-red-600 transition-all text-center">
+                  Back to Recipe Collection
+                </Link>
+                <button
+                  onClick={signOut}
+                  className="px-6 py-3 border border-gray-300 text-gray-700 font-medium rounded-lg hover:bg-gray-50 transition-colors">
+                  Sign Out
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+}
