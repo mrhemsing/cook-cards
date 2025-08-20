@@ -31,11 +31,11 @@ interface Recipe {
 export default function RecipeBook() {
   const { user, signOut } = useAuth();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
+  const [loading, setLoading] = useState(true);
   const [showScanner, setShowScanner] = useState(false);
   const [showForm, setShowForm] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
-  const [loading, setLoading] = useState(true);
 
   // Categories data
   const categories = [
@@ -48,14 +48,23 @@ export default function RecipeBook() {
   ];
 
   const fetchRecipes = useCallback(async () => {
+    if (!user?.id) return;
+
     try {
+      setLoading(true);
       const { data, error } = await supabase
         .from('recipes')
-        .select('*, category:categories(*)')
-        .eq('user_id', user?.id)
+        .select(
+          `
+          *,
+          category:categories(id, name, display_name, color)
+        `
+        )
+        .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
       setRecipes(data || []);
     } catch (error) {
       console.error('Error fetching recipes:', error);
@@ -65,10 +74,8 @@ export default function RecipeBook() {
   }, [user?.id]);
 
   useEffect(() => {
-    if (user?.id) {
-      fetchRecipes();
-    }
-  }, [user?.id, fetchRecipes]);
+    fetchRecipes();
+  }, [fetchRecipes]);
 
   const handleRecipeAdded = () => {
     setShowForm(false);
@@ -153,7 +160,16 @@ export default function RecipeBook() {
               <Link
                 href="/profile"
                 className="flex items-center space-x-3 hover:opacity-80 transition-opacity">
-                <ProfilePhoto src={user?.user_metadata?.avatar_url} size="md" />
+                <ProfilePhoto
+                  src={user?.user_metadata?.avatar_url}
+                  size="md"
+                  displayName={
+                    user?.user_metadata?.display_name ||
+                    user?.user_metadata?.username ||
+                    user?.user_metadata?.full_name ||
+                    user?.email?.split('@')[0]
+                  }
+                />
                 <span className="text-sm text-gray-600 hover:text-[#C76572] transition-colors">
                   {user?.user_metadata?.display_name ||
                     user?.user_metadata?.username ||
@@ -206,7 +222,16 @@ export default function RecipeBook() {
         {/* Page Heading */}
         <div className="mb-8">
           <div className="flex items-center space-x-4 mb-4">
-            <ProfilePhoto src={user?.user_metadata?.avatar_url} size="lg" />
+            <ProfilePhoto
+              src={user?.user_metadata?.avatar_url}
+              size="lg"
+              displayName={
+                user?.user_metadata?.display_name ||
+                user?.user_metadata?.username ||
+                user?.user_metadata?.full_name ||
+                user?.email?.split('@')[0]
+              }
+            />
             <div>
               <h1 className="text-3xl font-bold text-gray-900">
                 {user?.user_metadata?.display_name ||

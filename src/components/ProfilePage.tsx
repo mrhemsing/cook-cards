@@ -294,6 +294,7 @@ export default function ProfilePage() {
                   src={profilePhoto}
                   size="xl"
                   className="bg-white bg-opacity-20"
+                  displayName={username}
                 />
 
                 {/* Photo upload controls */}
