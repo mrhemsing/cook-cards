@@ -45,10 +45,10 @@ export default function RecipeBook() {
   // Categories data
   const categories = [
     { id: 3, name: 'appetizers', display_name: 'Appetizers', color: '#10B981' },
-    { id: 1, name: 'baking', display_name: 'Baking', color: '#F59E0B' },
-    { id: 2, name: 'desserts', display_name: 'Desserts', color: '#EC4899' },
-    { id: 5, name: 'main', display_name: 'Main', color: '#EF4444' },
     { id: 4, name: 'salad', display_name: 'Salad', color: '#3B82F6' },
+    { id: 5, name: 'main', display_name: 'Main', color: '#EF4444' },
+    { id: 2, name: 'desserts', display_name: 'Desserts', color: '#EC4899' },
+    { id: 1, name: 'baking', display_name: 'Baking', color: '#F59E0B' },
     { id: 6, name: 'other', display_name: 'Other', color: '#6B7280' }
   ];
 
