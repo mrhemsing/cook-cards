@@ -84,7 +84,10 @@ export default function RecipeBook() {
       if (navigator.share) {
         await navigator.share({
           title: `${
-            user?.user_metadata?.full_name || user?.email
+            user?.user_metadata?.display_name ||
+            user?.user_metadata?.username ||
+            user?.user_metadata?.full_name ||
+            user?.email
           }'s Recipe Collection`,
           text: `Check out my personal recipe collection on Mom's Yums! I have ${recipes.length} recipes saved.`,
           url: shareUrl
@@ -198,7 +201,10 @@ export default function RecipeBook() {
         {/* Page Heading */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            {user?.user_metadata?.full_name || user?.email?.split('@')[0]}
+            {user?.user_metadata?.display_name ||
+              user?.user_metadata?.username ||
+              user?.user_metadata?.full_name ||
+              user?.email?.split('@')[0]}
             &apos;s <br className="block sm:hidden" />
             Recipe Collection
           </h1>

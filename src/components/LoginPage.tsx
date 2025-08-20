@@ -141,7 +141,7 @@ export default function LoginPage() {
               <label
                 htmlFor="username"
                 className="block text-sm font-medium text-gray-700 mb-2">
-                Username
+                Display Name
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -152,7 +152,7 @@ export default function LoginPage() {
                   onChange={e => setUsername(e.target.value)}
                   required={isSignUp}
                   className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Choose a username"
+                  placeholder="Choose a display name"
                 />
               </div>
             </div>

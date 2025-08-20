@@ -19,29 +19,29 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
     setLoading(true);
     setError('');
 
-    if (username.length < 3) {
-      setError('Username must be at least 3 characters long');
+    if (username.length < 2) {
+      setError('Display name must be at least 2 characters long');
       setLoading(false);
       return;
     }
 
-    if (username.length > 20) {
-      setError('Username must be 20 characters or less');
+    if (username.length > 30) {
+      setError('Display name must be 30 characters or less');
       setLoading(false);
       return;
     }
 
-    // Check if username contains only letters, numbers, and underscores
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      setError('Username can only contain letters, numbers, and underscores');
+    // Check if display name contains only letters, numbers, and spaces
+    if (!/^[a-zA-Z0-9\s]+$/.test(username)) {
+      setError('Display name can only contain letters, numbers, and spaces');
       setLoading(false);
       return;
     }
 
     try {
-      // Update the user's profile with the username
+      // Update the user's profile with the display name
       const { error } = await supabase.from('profiles').upsert({
-        username: username.toLowerCase(),
+        username: username.toLowerCase().replace(/\s+/g, '_'),
         display_name: username,
         updated_at: new Date().toISOString()
       });
@@ -51,7 +51,7 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
       // Update the user's metadata
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
-          username: username.toLowerCase(),
+          username: username.toLowerCase().replace(/\s+/g, '_'),
           display_name: username
         }
       });
@@ -87,7 +87,8 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
             Welcome to Mom&apos;s Yums!
           </h1>
           <p className="text-gray-600">
-            Let&apos;s set up your profile. Choose a username to get started.
+            Let&apos;s set up your profile. Choose a display name to get
+            started.
           </p>
         </div>
 
@@ -97,7 +98,7 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
             <label
               htmlFor="username"
               className="block text-sm font-medium text-gray-700 mb-2 text-left">
-              Choose Your Username
+              Choose Your Display Name
             </label>
             <div className="relative">
               <User className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
@@ -110,22 +111,22 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
                   setError('');
                 }}
                 required
-                minLength={3}
-                maxLength={20}
+                minLength={2}
+                maxLength={30}
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="Enter your username"
+                placeholder="Enter your display name"
               />
-              {username.length >= 3 && (
+              {username.length >= 2 && (
                 <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
                   <Check className="h-4 w-4 text-green-500" />
                 </div>
               )}
             </div>
 
-            {/* Username requirements */}
+            {/* Display name requirements */}
             <div className="mt-2 text-xs text-gray-500 text-left">
-              <p>• 3-20 characters long</p>
-              <p>• Letters, numbers, and underscores only</p>
+              <p>• 2-30 characters long</p>
+              <p>• Letters, numbers, and spaces only</p>
               <p>• This will be your display name</p>
             </div>
           </div>
@@ -138,14 +139,14 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
 
           <button
             type="submit"
-            disabled={loading || username.length < 3}
+            disabled={loading || username.length < 2}
             className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-lg font-medium hover:from-orange-600 hover:to-red-600 transition-all disabled:opacity-50 shadow-lg">
             {loading ? (
               <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
             ) : (
               <Check className="h-5 w-5" />
             )}
-            {loading ? 'Setting Username...' : 'Continue to App'}
+            {loading ? 'Setting Display Name...' : 'Continue to App'}
           </button>
         </form>
       </div>

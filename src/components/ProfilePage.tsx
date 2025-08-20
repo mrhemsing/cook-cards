@@ -23,24 +23,24 @@ export default function ProfilePage() {
     }
   }, [user]);
 
-  const handleUpdateUsername = async () => {
+  const handleUpdateDisplayName = async () => {
     if (!username.trim()) {
-      setError('Username cannot be empty');
+      setError('Display name cannot be empty');
       return;
     }
 
-    if (username.length < 3) {
-      setError('Username must be at least 3 characters long');
+    if (username.length < 2) {
+      setError('Display name must be at least 2 characters long');
       return;
     }
 
-    if (username.length > 20) {
-      setError('Username must be 20 characters or less');
+    if (username.length > 30) {
+      setError('Display name must be 30 characters or less');
       return;
     }
 
-    if (!/^[a-zA-Z0-9_]+$/.test(username)) {
-      setError('Username can only contain letters, numbers, and underscores');
+    if (!/^[a-zA-Z0-9\s]+$/.test(username)) {
+      setError('Display name can only contain letters, numbers, and spaces');
       return;
     }
 
@@ -49,9 +49,9 @@ export default function ProfilePage() {
     setSuccess('');
 
     try {
-      // Update the user's profile with the new username
+      // Update the user's profile with the new display name
       const { error: profileError } = await supabase.from('profiles').upsert({
-        username: username.toLowerCase(),
+        username: username.toLowerCase().replace(/\s+/g, '_'),
         display_name: username,
         updated_at: new Date().toISOString()
       });
@@ -61,19 +61,21 @@ export default function ProfilePage() {
       // Update the user's metadata
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
-          username: username.toLowerCase(),
+          username: username.toLowerCase().replace(/\s+/g, '_'),
           display_name: username
         }
       });
 
       if (updateError) throw updateError;
 
-      setSuccess('Username updated successfully!');
+      setSuccess('Display name updated successfully!');
       setIsEditing(false);
     } catch (error: unknown) {
       console.error('Error updating username:', error);
       const errorMessage =
-        error instanceof Error ? error.message : 'Failed to update username';
+        error instanceof Error
+          ? error.message
+          : 'Failed to update display name';
       setError(errorMessage);
     } finally {
       setLoading(false);
@@ -153,7 +155,7 @@ export default function ProfilePage() {
                 <div className="flex items-center space-x-3">
                   <User className="h-5 w-5 text-gray-400" />
                   <div className="flex-1">
-                    <p className="text-sm text-gray-500">Username</p>
+                    <p className="text-sm text-gray-500">Display Name</p>
                     {isEditing ? (
                       <div className="flex items-center space-x-2 mt-1">
                         <input
@@ -161,10 +163,10 @@ export default function ProfilePage() {
                           value={username}
                           onChange={e => setUsername(e.target.value)}
                           className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                          placeholder="Enter username"
+                          placeholder="Enter display name"
                         />
                         <button
-                          onClick={handleUpdateUsername}
+                          onClick={handleUpdateDisplayName}
                           disabled={loading}
                           className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors disabled:opacity-50">
                           {loading ? (

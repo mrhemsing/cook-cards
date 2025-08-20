@@ -14,33 +14,33 @@ export default function Home() {
   const [checkingUsername, setCheckingUsername] = useState(true);
 
   useEffect(() => {
-    const checkUsername = async () => {
+    const checkDisplayName = async () => {
       if (user) {
         try {
-          // Check if user has a username in their metadata
-          const hasUsername =
-            user.user_metadata?.username || user.user_metadata?.display_name;
+          // Check if user has a display name in their metadata
+          const hasDisplayName =
+            user.user_metadata?.display_name || user.user_metadata?.username;
 
-          if (!hasUsername) {
-            // Check profiles table for username
+          if (!hasDisplayName) {
+            // Check profiles table for display name
             try {
               const { data: profile } = await supabase
                 .from('profiles')
-                .select('username')
+                .select('display_name')
                 .eq('id', user.id)
                 .single();
 
-              if (!profile?.username) {
+              if (!profile?.display_name) {
                 setShowUsernameSetup(true);
               }
             } catch (profileError) {
               console.error('Error checking profiles table:', profileError);
-              // If profiles table doesn't exist or query fails, show username setup
+              // If profiles table doesn't exist or query fails, show display name setup
               setShowUsernameSetup(true);
             }
           }
         } catch (error) {
-          console.error('Error checking username:', error);
+          console.error('Error checking display name:', error);
           // If there's an error, assume they need to set username
           setShowUsernameSetup(true);
         }
@@ -51,7 +51,7 @@ export default function Home() {
       }
     };
 
-    checkUsername();
+    checkDisplayName();
   }, [user]);
 
   if (loading || checkingUsername) {
