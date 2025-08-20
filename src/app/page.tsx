@@ -34,8 +34,11 @@ export default function Home() {
                 setShowUsernameSetup(true);
               }
             } catch (profileError) {
-              console.error('Error checking profiles table:', profileError);
-              // If profiles table doesn't exist or query fails, show display name setup
+              console.warn(
+                'Profiles table does not exist or is not accessible:',
+                profileError
+              );
+              // If profiles table doesn't exist, show display name setup
               setShowUsernameSetup(true);
             }
           }

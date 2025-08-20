@@ -49,16 +49,7 @@ export default function ProfilePage() {
     setSuccess('');
 
     try {
-      // Update the user's profile with the new display name
-      const { error: profileError } = await supabase.from('profiles').upsert({
-        username: username.toLowerCase().replace(/\s+/g, '_'),
-        display_name: username,
-        updated_at: new Date().toISOString()
-      });
-
-      if (profileError) throw profileError;
-
-      // Update the user's metadata
+      // First try to update the user's metadata (this always works)
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
           username: username.toLowerCase().replace(/\s+/g, '_'),
@@ -68,10 +59,33 @@ export default function ProfilePage() {
 
       if (updateError) throw updateError;
 
+      // Try to update the profiles table if it exists
+      try {
+        const { error: profileError } = await supabase.from('profiles').upsert({
+          id: user.id,
+          username: username.toLowerCase().replace(/\s+/g, '_'),
+          display_name: username,
+          updated_at: new Date().toISOString()
+        });
+
+        if (profileError) {
+          console.warn(
+            'Profiles table update failed, but user metadata was updated:',
+            profileError
+          );
+        }
+      } catch (profileError) {
+        console.warn(
+          'Profiles table does not exist or is not accessible:',
+          profileError
+        );
+        // This is okay - the user metadata was already updated
+      }
+
       setSuccess('Display name updated successfully!');
       setIsEditing(false);
     } catch (error: unknown) {
-      console.error('Error updating username:', error);
+      console.error('Error updating display name:', error);
       const errorMessage =
         error instanceof Error
           ? error.message

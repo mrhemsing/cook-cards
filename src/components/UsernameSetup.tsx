@@ -39,16 +39,7 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
     }
 
     try {
-      // Update the user's profile with the display name
-      const { error } = await supabase.from('profiles').upsert({
-        username: username.toLowerCase().replace(/\s+/g, '_'),
-        display_name: username,
-        updated_at: new Date().toISOString()
-      });
-
-      if (error) throw error;
-
-      // Update the user's metadata
+      // First try to update the user's metadata (this always works)
       const { error: updateError } = await supabase.auth.updateUser({
         data: {
           username: username.toLowerCase().replace(/\s+/g, '_'),
@@ -58,11 +49,34 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
 
       if (updateError) throw updateError;
 
+      // Try to update the profiles table if it exists
+      try {
+        const { error: profileError } = await supabase.from('profiles').upsert({
+          id: (await supabase.auth.getUser()).data.user?.id,
+          username: username.toLowerCase().replace(/\s+/g, '_'),
+          display_name: username,
+          updated_at: new Date().toISOString()
+        });
+
+        if (profileError) {
+          console.warn(
+            'Profiles table update failed, but user metadata was updated:',
+            profileError
+          );
+        }
+      } catch (profileError) {
+        console.warn(
+          'Profiles table does not exist or is not accessible:',
+          profileError
+        );
+        // This is okay - the user metadata was already updated
+      }
+
       onComplete();
     } catch (error: unknown) {
-      console.error('Error setting username:', error);
+      console.error('Error setting display name:', error);
       const errorMessage =
-        error instanceof Error ? error.message : 'Failed to set username';
+        error instanceof Error ? error.message : 'Failed to set display name';
       setError(errorMessage);
     } finally {
       setLoading(false);
