@@ -77,7 +77,7 @@ export default function UsernameSetup({ onComplete }: UsernameSetupProps) {
           <div className="flex justify-center mb-4">
             <Image
               src="/moms_yums_logo.svg"
-              alt="Mom's Yums Logo"
+              alt="Moms Yums Logo"
               width={48}
               height={48}
               className="h-12 w-12"
