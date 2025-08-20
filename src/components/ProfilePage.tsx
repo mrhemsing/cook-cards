@@ -60,26 +60,28 @@ export default function ProfilePage() {
       if (updateError) throw updateError;
 
       // Try to update the profiles table if it exists
-      try {
-        const { error: profileError } = await supabase.from('profiles').upsert({
-          id: user.id,
-          username: username.toLowerCase().replace(/\s+/g, '_'),
-          display_name: username,
-          updated_at: new Date().toISOString()
-        });
+      if (user?.id) {
+        try {
+          const { error: profileError } = await supabase.from('profiles').upsert({
+            id: user.id,
+            username: username.toLowerCase().replace(/\s+/g, '_'),
+            display_name: username,
+            updated_at: new Date().toISOString()
+          });
 
-        if (profileError) {
+          if (profileError) {
+            console.warn(
+              'Profiles table update failed, but user metadata was updated:',
+              profileError
+            );
+          }
+        } catch (profileError) {
           console.warn(
-            'Profiles table update failed, but user metadata was updated:',
+            'Profiles table does not exist or is not accessible:',
             profileError
           );
+          // This is okay - the user metadata was already updated
         }
-      } catch (profileError) {
-        console.warn(
-          'Profiles table does not exist or is not accessible:',
-          profileError
-        );
-        // This is okay - the user metadata was already updated
       }
 
       setSuccess('Display name updated successfully!');
