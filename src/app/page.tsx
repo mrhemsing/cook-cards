@@ -23,13 +23,19 @@ export default function Home() {
 
           if (!hasUsername) {
             // Check profiles table for username
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('username')
-              .eq('id', user.id)
-              .single();
+            try {
+              const { data: profile } = await supabase
+                .from('profiles')
+                .select('username')
+                .eq('id', user.id)
+                .single();
 
-            if (!profile?.username) {
+              if (!profile?.username) {
+                setShowUsernameSetup(true);
+              }
+            } catch (profileError) {
+              console.error('Error checking profiles table:', profileError);
+              // If profiles table doesn't exist or query fails, show username setup
               setShowUsernameSetup(true);
             }
           }
@@ -38,6 +44,9 @@ export default function Home() {
           // If there's an error, assume they need to set username
           setShowUsernameSetup(true);
         }
+        setCheckingUsername(false);
+      } else {
+        // No user, stop checking
         setCheckingUsername(false);
       }
     };
