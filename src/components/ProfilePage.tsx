@@ -462,7 +462,7 @@ export default function ProfilePage() {
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link
                   href="/"
-                  className="flex-1 px-6 py-3 bg-gradient-to-r from-[#C76572] to-[#B04A5A] text-white font-medium rounded-lg hover:from-[#B04A5A] hover:to-[#9A3D4A] transition-all text-center">
+                  className="px-6 py-3 bg-gradient-to-r from-orange-500 to-red-500 text-white font-medium rounded-lg hover:from-orange-600 hover:to-red-600 transition-all text-center">
                   Back to Recipe Collection
                 </Link>
                 <button
