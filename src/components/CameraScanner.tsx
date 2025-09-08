@@ -34,6 +34,8 @@ export default function CameraScanner({
   const [currentOCRService, setCurrentOCRService] = useState<string>('');
   const [selectedCategory, setSelectedCategory] = useState<number | null>(null);
   const [showCategorySelector, setShowCategorySelector] = useState(true);
+  const [permissionDenied, setPermissionDenied] = useState(false);
+  const [showPermissionHelp, setShowPermissionHelp] = useState(false);
 
   // Categories data
   const categories: Category[] = [
@@ -44,6 +46,115 @@ export default function CameraScanner({
     { id: 1, name: 'baking', display_name: 'Baking', color: '#F59E0B' },
     { id: 6, name: 'other', display_name: 'Other', color: '#6B7280' }
   ];
+
+  // Function to check and request camera permissions
+  const checkCameraPermission = async () => {
+    try {
+      // Check if we can access the mediaDevices API
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Camera not supported on this device');
+      }
+
+      // Request camera permission
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { 
+          facingMode: facingMode,
+          width: { ideal: 640 },
+          height: { ideal: 480 }
+        } 
+      });
+      
+      // Stop the stream immediately as we just wanted to check permission
+      stream.getTracks().forEach(track => track.stop());
+      
+      // Permission granted, reset error states
+      setCameraError(null);
+      setPermissionDenied(false);
+      setShowPermissionHelp(false);
+      
+      return true;
+    } catch (error) {
+      console.error('Camera permission error:', error);
+      
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+          setPermissionDenied(true);
+          setCameraError('Camera access denied. Please allow camera permissions to continue.');
+        } else if (error.name === 'NotFoundError') {
+          setCameraError('No camera found on this device.');
+        } else if (error.name === 'NotSupportedError') {
+          setCameraError('Camera not supported on this device.');
+        } else {
+          setCameraError('Camera error. Please try again.');
+        }
+      } else {
+        setCameraError('Camera error. Please try again.');
+      }
+      
+      return false;
+    }
+  };
+
+  // Function to get browser-specific instructions
+  const getBrowserInstructions = () => {
+    const userAgent = navigator.userAgent.toLowerCase();
+    
+    if (userAgent.includes('chrome')) {
+      return {
+        browser: 'Chrome',
+        steps: [
+          'Look for the camera icon in your address bar',
+          'Click on it and select "Allow"',
+          'If you don\'t see the icon, click the lock icon next to the address',
+          'Change camera permission to "Allow"',
+          'Refresh the page and try again'
+        ]
+      };
+    } else if (userAgent.includes('firefox')) {
+      return {
+        browser: 'Firefox',
+        steps: [
+          'Look for the camera icon in your address bar',
+          'Click on it and select "Allow"',
+          'If you don\'t see the icon, click the shield icon next to the address',
+          'Change camera permission to "Allow"',
+          'Refresh the page and try again'
+        ]
+      };
+    } else if (userAgent.includes('safari')) {
+      return {
+        browser: 'Safari',
+        steps: [
+          'Go to Safari menu > Settings for This Website',
+          'Change camera permission to "Allow"',
+          'Refresh the page and try again'
+        ]
+      };
+    } else if (userAgent.includes('edge')) {
+      return {
+        browser: 'Edge',
+        steps: [
+          'Look for the camera icon in your address bar',
+          'Click on it and select "Allow"',
+          'If you don\'t see the icon, click the lock icon next to the address',
+          'Change camera permission to "Allow"',
+          'Refresh the page and try again'
+        ]
+      };
+    } else {
+      return {
+        browser: 'Your Browser',
+        steps: [
+          'Look for a camera or permission icon in your address bar',
+          'Click on it and select "Allow" for camera access',
+          'If you don\'t see an icon, check your browser settings',
+          'Look for "Site permissions" or "Privacy" settings',
+          'Enable camera access for this website',
+          'Refresh the page and try again'
+        ]
+      };
+    }
+  };
 
   // Add image enhancement before AI processing (fallback)
   const enhanceImageForOCR = (imageData: string): Promise<string> => {
@@ -410,6 +521,8 @@ export default function CameraScanner({
     setInstructions('');
     setAiCompleted(false);
     setCameraError(null); // Reset camera error when retaking
+    setPermissionDenied(false);
+    setShowPermissionHelp(false);
     setShowAddPhoto(false);
     setSelectedCategory(null);
     setShowCategorySelector(true);
@@ -634,16 +747,54 @@ export default function CameraScanner({
               <div className="relative bg-gray-900 rounded-lg overflow-hidden">
                 {cameraError ? (
                   <div className="w-full h-64 flex items-center justify-center text-white">
-                    <div className="text-center">
+                    <div className="text-center max-w-md mx-auto p-4">
                       <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100 mb-4">
                         <Camera className="h-6 w-6 text-red-600" />
                       </div>
-                      <p className="text-red-200 mb-2">{cameraError}</p>
-                      <button
-                        onClick={() => setCameraError(null)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
-                        Try Again
-                      </button>
+                      <p className="text-red-200 mb-4">{cameraError}</p>
+                      
+                      {permissionDenied && (
+                        <div className="space-y-3">
+                          <button
+                            onClick={checkCameraPermission}
+                            className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mb-2">
+                            🔄 Try Again
+                          </button>
+                          
+                          <button
+                            onClick={() => setShowPermissionHelp(!showPermissionHelp)}
+                            className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
+                            {showPermissionHelp ? 'Hide' : 'Show'} Help Instructions
+                          </button>
+                          
+                          {showPermissionHelp && (
+                            <div className="mt-4 p-4 bg-black bg-opacity-50 rounded-lg text-left">
+                              <h4 className="font-semibold text-white mb-2">
+                                How to Enable Camera Access in {getBrowserInstructions().browser}:
+                              </h4>
+                              <ol className="text-sm text-gray-200 space-y-1">
+                                {getBrowserInstructions().steps.map((step, index) => (
+                                  <li key={index} className="flex items-start">
+                                    <span className="text-orange-400 mr-2">{index + 1}.</span>
+                                    <span>{step}</span>
+                                  </li>
+                                ))}
+                              </ol>
+                              <div className="mt-3 p-2 bg-yellow-900 bg-opacity-50 rounded text-xs text-yellow-200">
+                                💡 <strong>Tip:</strong> After changing permissions, refresh the page and try again.
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+                      
+                      {!permissionDenied && (
+                        <button
+                          onClick={() => setCameraError(null)}
+                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors">
+                          Try Again
+                        </button>
+                      )}
                     </div>
                   </div>
                 ) : (
@@ -665,6 +816,7 @@ export default function CameraScanner({
                       }}
                       onUserMediaError={error => {
                         console.error('User media error:', error);
+                        setPermissionDenied(true);
                         setCameraError(
                           'Camera access denied. Please allow camera permissions and try again.'
                         );
@@ -721,6 +873,51 @@ export default function CameraScanner({
                   different angles.
                 </p>
               </div>
+
+              {/* Fallback option for camera issues */}
+              {permissionDenied && (
+                <div className="mt-4 p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+                  <h4 className="text-sm font-medium text-yellow-800 mb-2">
+                    📷 Camera Not Working?
+                  </h4>
+                  <p className="text-xs text-yellow-700 mb-3">
+                    If you're having trouble with camera permissions, you can still add recipes by uploading photos from your device.
+                  </p>
+                  <button
+                    onClick={() => {
+                      // Create a file input element
+                      const input = document.createElement('input');
+                      input.type = 'file';
+                      input.accept = 'image/*';
+                      input.multiple = true;
+                      input.onchange = async (e) => {
+                        const files = (e.target as HTMLInputElement).files;
+                        if (files && files.length > 0) {
+                          const newImages: string[] = [];
+                          for (let i = 0; i < files.length; i++) {
+                            const file = files[i];
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                              const result = e.target?.result as string;
+                              if (result) {
+                                newImages.push(result);
+                                if (newImages.length === files.length) {
+                                  setCapturedImages(newImages);
+                                  extractRecipeWithMultipleServices(newImages);
+                                }
+                              }
+                            };
+                            reader.readAsDataURL(file);
+                          }
+                        }
+                      };
+                      input.click();
+                    }}
+                    className="w-full px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 transition-colors text-sm">
+                    📁 Upload Photos Instead
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             /* Recipe Form */
@@ -784,6 +981,7 @@ export default function CameraScanner({
                           }}
                           onUserMediaError={error => {
                             console.error('User media error:', error);
+                            setPermissionDenied(true);
                             setCameraError(
                               'Camera access denied. Please allow camera permissions and try again.'
                             );
