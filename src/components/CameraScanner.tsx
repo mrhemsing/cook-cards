@@ -110,7 +110,7 @@ export default function CameraScanner({
         steps: [
           'Look for the camera icon in your address bar',
           'Click on it and select "Allow"',
-          "If you don't see the icon, click the lock icon next to the address",
+          'If you don&apos;t see the icon, click the lock icon next to the address',
           'Change camera permission to "Allow"',
           'Refresh the page and try again'
         ]
@@ -121,7 +121,7 @@ export default function CameraScanner({
         steps: [
           'Look for the camera icon in your address bar',
           'Click on it and select "Allow"',
-          "If you don't see the icon, click the shield icon next to the address",
+          'If you don&apos;t see the icon, click the shield icon next to the address',
           'Change camera permission to "Allow"',
           'Refresh the page and try again'
         ]
@@ -141,7 +141,7 @@ export default function CameraScanner({
         steps: [
           'Look for the camera icon in your address bar',
           'Click on it and select "Allow"',
-          "If you don't see the icon, click the lock icon next to the address",
+          'If you don&apos;t see the icon, click the lock icon next to the address',
           'Change camera permission to "Allow"',
           'Refresh the page and try again'
         ]
@@ -152,7 +152,7 @@ export default function CameraScanner({
         steps: [
           'Look for a camera or permission icon in your address bar',
           'Click on it and select "Allow" for camera access',
-          "If you don't see an icon, check your browser settings",
+          'If you don&apos;t see an icon, check your browser settings',
           'Look for "Site permissions" or "Privacy" settings',
           'Enable camera access for this website',
           'Refresh the page and try again'
@@ -897,8 +897,8 @@ export default function CameraScanner({
                     📷 Camera Not Working?
                   </h4>
                   <p className="text-xs text-yellow-700 mb-3">
-                    If you're having trouble with camera permissions, you can
-                    still add recipes by uploading photos from your device.
+                    If you&apos;re having trouble with camera permissions, you
+                    can still add recipes by uploading photos from your device.
                   </p>
                   <button
                     onClick={() => {
