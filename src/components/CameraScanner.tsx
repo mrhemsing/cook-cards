@@ -56,30 +56,35 @@ export default function CameraScanner({
       }
 
       // Request camera permission
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
           facingMode: facingMode,
           width: { ideal: 640 },
           height: { ideal: 480 }
-        } 
+        }
       });
-      
+
       // Stop the stream immediately as we just wanted to check permission
       stream.getTracks().forEach(track => track.stop());
-      
+
       // Permission granted, reset error states
       setCameraError(null);
       setPermissionDenied(false);
       setShowPermissionHelp(false);
-      
+
       return true;
     } catch (error) {
       console.error('Camera permission error:', error);
-      
+
       if (error instanceof Error) {
-        if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        if (
+          error.name === 'NotAllowedError' ||
+          error.name === 'PermissionDeniedError'
+        ) {
           setPermissionDenied(true);
-          setCameraError('Camera access denied. Please allow camera permissions to continue.');
+          setCameraError(
+            'Camera access denied. Please allow camera permissions to continue.'
+          );
         } else if (error.name === 'NotFoundError') {
           setCameraError('No camera found on this device.');
         } else if (error.name === 'NotSupportedError') {
@@ -90,7 +95,7 @@ export default function CameraScanner({
       } else {
         setCameraError('Camera error. Please try again.');
       }
-      
+
       return false;
     }
   };
@@ -98,14 +103,14 @@ export default function CameraScanner({
   // Function to get browser-specific instructions
   const getBrowserInstructions = () => {
     const userAgent = navigator.userAgent.toLowerCase();
-    
+
     if (userAgent.includes('chrome')) {
       return {
         browser: 'Chrome',
         steps: [
           'Look for the camera icon in your address bar',
           'Click on it and select "Allow"',
-          'If you don\'t see the icon, click the lock icon next to the address',
+          "If you don't see the icon, click the lock icon next to the address",
           'Change camera permission to "Allow"',
           'Refresh the page and try again'
         ]
@@ -116,7 +121,7 @@ export default function CameraScanner({
         steps: [
           'Look for the camera icon in your address bar',
           'Click on it and select "Allow"',
-          'If you don\'t see the icon, click the shield icon next to the address',
+          "If you don't see the icon, click the shield icon next to the address",
           'Change camera permission to "Allow"',
           'Refresh the page and try again'
         ]
@@ -136,7 +141,7 @@ export default function CameraScanner({
         steps: [
           'Look for the camera icon in your address bar',
           'Click on it and select "Allow"',
-          'If you don\'t see the icon, click the lock icon next to the address',
+          "If you don't see the icon, click the lock icon next to the address",
           'Change camera permission to "Allow"',
           'Refresh the page and try again'
         ]
@@ -147,7 +152,7 @@ export default function CameraScanner({
         steps: [
           'Look for a camera or permission icon in your address bar',
           'Click on it and select "Allow" for camera access',
-          'If you don\'t see an icon, check your browser settings',
+          "If you don't see an icon, check your browser settings",
           'Look for "Site permissions" or "Privacy" settings',
           'Enable camera access for this website',
           'Refresh the page and try again'
@@ -752,7 +757,7 @@ export default function CameraScanner({
                         <Camera className="h-6 w-6 text-red-600" />
                       </div>
                       <p className="text-red-200 mb-4">{cameraError}</p>
-                      
+
                       {permissionDenied && (
                         <div className="space-y-3">
                           <button
@@ -760,34 +765,45 @@ export default function CameraScanner({
                             className="w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors mb-2">
                             🔄 Try Again
                           </button>
-                          
+
                           <button
-                            onClick={() => setShowPermissionHelp(!showPermissionHelp)}
+                            onClick={() =>
+                              setShowPermissionHelp(!showPermissionHelp)
+                            }
                             className="w-full px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors">
-                            {showPermissionHelp ? 'Hide' : 'Show'} Help Instructions
+                            {showPermissionHelp ? 'Hide' : 'Show'} Help
+                            Instructions
                           </button>
-                          
+
                           {showPermissionHelp && (
                             <div className="mt-4 p-4 bg-black bg-opacity-50 rounded-lg text-left">
                               <h4 className="font-semibold text-white mb-2">
-                                How to Enable Camera Access in {getBrowserInstructions().browser}:
+                                How to Enable Camera Access in{' '}
+                                {getBrowserInstructions().browser}:
                               </h4>
                               <ol className="text-sm text-gray-200 space-y-1">
-                                {getBrowserInstructions().steps.map((step, index) => (
-                                  <li key={index} className="flex items-start">
-                                    <span className="text-orange-400 mr-2">{index + 1}.</span>
-                                    <span>{step}</span>
-                                  </li>
-                                ))}
+                                {getBrowserInstructions().steps.map(
+                                  (step, index) => (
+                                    <li
+                                      key={index}
+                                      className="flex items-start">
+                                      <span className="text-orange-400 mr-2">
+                                        {index + 1}.
+                                      </span>
+                                      <span>{step}</span>
+                                    </li>
+                                  )
+                                )}
                               </ol>
                               <div className="mt-3 p-2 bg-yellow-900 bg-opacity-50 rounded text-xs text-yellow-200">
-                                💡 <strong>Tip:</strong> After changing permissions, refresh the page and try again.
+                                💡 <strong>Tip:</strong> After changing
+                                permissions, refresh the page and try again.
                               </div>
                             </div>
                           )}
                         </div>
                       )}
-                      
+
                       {!permissionDenied && (
                         <button
                           onClick={() => setCameraError(null)}
@@ -881,7 +897,8 @@ export default function CameraScanner({
                     📷 Camera Not Working?
                   </h4>
                   <p className="text-xs text-yellow-700 mb-3">
-                    If you're having trouble with camera permissions, you can still add recipes by uploading photos from your device.
+                    If you're having trouble with camera permissions, you can
+                    still add recipes by uploading photos from your device.
                   </p>
                   <button
                     onClick={() => {
@@ -890,14 +907,14 @@ export default function CameraScanner({
                       input.type = 'file';
                       input.accept = 'image/*';
                       input.multiple = true;
-                      input.onchange = async (e) => {
+                      input.onchange = async e => {
                         const files = (e.target as HTMLInputElement).files;
                         if (files && files.length > 0) {
                           const newImages: string[] = [];
                           for (let i = 0; i < files.length; i++) {
                             const file = files[i];
                             const reader = new FileReader();
-                            reader.onload = (e) => {
+                            reader.onload = e => {
                               const result = e.target?.result as string;
                               if (result) {
                                 newImages.push(result);
