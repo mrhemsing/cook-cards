@@ -79,8 +79,9 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center p-4">
-      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl p-8">
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 to-red-50 flex items-center justify-center px-4 pt-[15px] pb-[10px]">
+      <div className="w-full max-w-md">
+        <div className="mt-[6px] bg-white rounded-2xl shadow-xl p-8">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
@@ -271,6 +272,16 @@ export default function LoginPage() {
         <div className="mt-8 text-center">
           <p className="text-xs text-gray-500">
             By continuing, you agree to our Terms of Service and Privacy Policy
+          </p>
+        </div>
+      </div>
+
+        <div className="mt-4">
+          <p className="mb-[10px] text-center text-sm text-gray-400">
+            © {new Date().getFullYear()}{' '}
+            <a href="https://www.b-average.com/" target="_blank" rel="noreferrer" className="text-gray-400">
+              B Average
+            </a>
           </p>
         </div>
       </div>

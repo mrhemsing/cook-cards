@@ -432,7 +432,17 @@ export default function RecipeBook() {
             onRecipeAdded={handleRecipeAdded}
           />
         )}
+
       </main>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+        <p className="text-left text-sm text-gray-600">
+          © {new Date().getFullYear()}{' '}
+          <a href="https://www.b-average.com/" target="_blank" rel="noreferrer" className="text-gray-600">
+            B Average
+          </a>
+        </p>
+      </div>
     </div>
   );
 }
