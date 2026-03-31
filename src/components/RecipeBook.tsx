@@ -436,10 +436,10 @@ export default function RecipeBook() {
       </main>
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
-        <p className="text-left text-sm text-gray-600">
-          © {new Date().getFullYear()}{' '}
-          <a href="https://www.b-average.com/" target="_blank" rel="noreferrer" className="text-gray-600">
-            B Average
+        <p className="inline-flex items-center gap-2 text-left text-sm text-gray-600">
+          <span>© {new Date().getFullYear()}</span>
+          <a href="https://www.b-average.com/" target="_blank" rel="noreferrer" className="inline-block bg-white px-[6px] pr-[5px] py-1 text-[11px] font-semibold uppercase tracking-[2.16px] leading-none text-black no-underline transition-colors duration-150 hover:bg-black hover:text-white">
+            B AVERAGE
           </a>
         </p>
       </div>
