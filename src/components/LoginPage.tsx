@@ -276,7 +276,7 @@ export default function LoginPage() {
         </div>
       </div>
 
-        <div className="mt-4">
+        <div className="mt-4 text-center sm:text-left">
           <p className="mb-[10px] inline-flex items-center gap-2 text-center text-sm text-gray-400">
             <span>© {new Date().getFullYear()}</span>
             <a href="https://www.b-average.com/" target="_blank" rel="noreferrer" className="inline-block bg-white px-[6px] pr-[5px] py-1 text-[11px] font-semibold uppercase tracking-[2.16px] leading-none text-black no-underline transition-colors duration-150 hover:bg-black hover:text-white">

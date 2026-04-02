@@ -435,7 +435,7 @@ export default function RecipeBook() {
 
       </main>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-6 text-center sm:text-left">
         <p className="inline-flex items-center gap-2 text-left text-sm text-gray-600">
           <span>© {new Date().getFullYear()}</span>
           <a href="https://www.b-average.com/" target="_blank" rel="noreferrer" className="inline-block bg-white px-[6px] pr-[5px] py-1 text-[11px] font-semibold uppercase tracking-[2.16px] leading-none text-black no-underline transition-colors duration-150 hover:bg-black hover:text-white">
